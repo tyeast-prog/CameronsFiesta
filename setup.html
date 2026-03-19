@@ -140,13 +140,17 @@
             <label for="ev-surprise">Surprise Banner Message</label>
             <input type="text" id="ev-surprise" placeholder="Please keep this a SURPRISE! Do not mention this event to Cameron." />
           </div>
-          <div class="form-row">
+          <div class="form-row form-row-3">
+            <div class="form-group">
+              <label for="ev-host-name">Host Name</label>
+              <input type="text" id="ev-host-name" placeholder="Your Name" />
+            </div>
             <div class="form-group">
               <label for="ev-contact-email">Host Contact Email</label>
               <input type="email" id="ev-contact-email" placeholder="host@example.com" />
             </div>
             <div class="form-group">
-              <label for="ev-contact-phone">Host Contact Phone <span style="color:var(--text-300);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+              <label for="ev-contact-phone">Host Contact Phone</label>
               <input type="text" id="ev-contact-phone" placeholder="(555) 000-0000" />
             </div>
           </div>
@@ -169,7 +173,7 @@
         </p>
 
         <div id="seed-prompt" class="alert alert-info" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-          <span>No side dish items yet. Would you like to start with the default 8 items?</span>
+          <span>No side dish items yet. Would you like to start with the default 10 items?</span>
           <button class="btn btn-primary btn-sm" onclick="seedItems()">Seed Default Items</button>
         </div>
 
@@ -385,6 +389,7 @@
       set('ev-dress-note',     ev.dressCodeNote);
       set('ev-welcome',        ev.welcomeMessage);
       set('ev-surprise',       ev.surpriseMessage);
+      set('ev-host-name',      ev.hostName);
       set('ev-contact-email',  ev.contactEmail);
       set('ev-contact-phone',  ev.contactPhone);
     }
@@ -408,6 +413,7 @@
           dressCodeNote:   document.getElementById('ev-dress-note').value,
           welcomeMessage:  document.getElementById('ev-welcome').value,
           surpriseMessage: document.getElementById('ev-surprise').value,
+          hostName:        document.getElementById('ev-host-name').value,
           contactEmail:    document.getElementById('ev-contact-email').value,
           contactPhone:    document.getElementById('ev-contact-phone').value
         });

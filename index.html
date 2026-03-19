@@ -128,12 +128,12 @@
           <!-- Contact -->
           <div class="form-row">
             <div class="form-group">
-              <label for="email">Email Address <span style="color:var(--danger)">*</span></label>
-              <input type="email" id="email" placeholder="you@example.com" required />
+              <label for="phone">Phone Number <span style="color:var(--danger)">*</span></label>
+              <input type="tel" id="phone" placeholder="(555) 000-0000" required />
             </div>
             <div class="form-group">
-              <label for="phone">Phone <span style="color:var(--text-300);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-              <input type="tel" id="phone" placeholder="(555) 000-0000" />
+              <label for="email">Email Address <span style="color:var(--text-300);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+              <input type="email" id="email" placeholder="you@example.com" />
             </div>
           </div>
 
@@ -348,11 +348,11 @@
         ? `Please let us know by ${ev.rsvpDeadline}` : 'Let us know if you can make it!');
 
       const fc = document.getElementById('footer-contact');
-      if (ev.contactEmail || ev.contactPhone) {
+      if (ev.hostName || ev.contactEmail || ev.contactPhone) {
         fc.innerHTML = 'Questions? ' +
-          (ev.contactEmail ? `<a href="mailto:${ev.contactEmail}">${ev.contactEmail}</a>` : '') +
-          (ev.contactEmail && ev.contactPhone ? '  ·  ' : '') +
-          (ev.contactPhone || '');
+          (ev.hostName ? `Contact <strong>${ev.hostName}</strong>` : 'Contact us') +
+          (ev.contactEmail ? ` · <a href="mailto:${ev.contactEmail}">${ev.contactEmail}</a>` : '') +
+          (ev.contactPhone ? `  ·  ${ev.contactPhone}` : '');
       }
     }
 

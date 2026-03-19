@@ -20,6 +20,7 @@ const DEFAULTS = {
     dressCodeNote:   'Think vibrant colors, elegant florals, or classic elegance with a festive flair',
     welcomeMessage:  "Join us for an elegant evening of authentic cuisine, vibrant music, and heartfelt celebration as we honor Cameron's milestone 50th birthday!",
     rsvpDeadline:    '[RSVP Deadline TBD]',
+    hostName:        '',
     contactEmail:    '',
     contactPhone:    '',
     surpriseMessage: 'Please keep this a SURPRISE! Do not mention this event to Cameron.'
@@ -67,7 +68,9 @@ const DEFAULTS = {
     { name: 'Frijoles de Olla',            description: 'Slow-cooked pinto beans, large pot',      needed: 2 },
     { name: 'Pico de Gallo & Salsas',      description: 'Assorted fresh salsas, serves 20+',       needed: 4 },
     { name: 'Tres Leches Cake',            description: 'Serves 12–15 slices',                     needed: 2 },
-    { name: 'Churros & Chocolate Sauce',   description: '4 dozen pieces with dipping sauce',       needed: 2 }
+    { name: 'Churros & Chocolate Sauce',   description: '4 dozen pieces with dipping sauce',       needed: 2 },
+    { name: 'Aguas Frescas',              description: 'Horchata, jamaica, or your favorite — serves 12+', needed: 3 },
+    { name: 'Sodas & Bottled Water',      description: 'Assorted sodas, sparkling water, or juice',       needed: 3 }
   ]
 };
 
