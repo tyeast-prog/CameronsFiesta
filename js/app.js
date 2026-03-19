@@ -61,16 +61,16 @@ const DEFAULTS = {
     }
   ],
   sideItems: [
-    { name: 'Artisanal Guacamole',       description: 'Fresh homemade, serves 10–12',           needed: 3 },
-    { name: 'Elote en Vaso (Street Corn)', description: 'Mexican street corn cups, 12 servings',   needed: 3 },
-    { name: 'Queso Fundido',               description: 'With tortilla chips, serves 8–10',        needed: 2 },
-    { name: 'Arroz Rojo (Spanish Rice)',   description: 'Large serving dish, 12+ servings',        needed: 3 },
-    { name: 'Frijoles de Olla',            description: 'Slow-cooked pinto beans, large pot',      needed: 2 },
-    { name: 'Pico de Gallo & Salsas',      description: 'Assorted fresh salsas, serves 20+',       needed: 4 },
-    { name: 'Tres Leches Cake',            description: 'Serves 12–15 slices',                     needed: 2 },
-    { name: 'Churros & Chocolate Sauce',   description: '4 dozen pieces with dipping sauce',       needed: 2 },
-    { name: 'Aguas Frescas',              description: 'Horchata, jamaica, or your favorite — serves 12+', needed: 3 },
-    { name: 'Sodas & Bottled Water',      description: 'Assorted sodas, sparkling water, or juice',       needed: 3 }
+    { name: 'Artisanal Guacamole',        description: 'Fresh homemade, serves 10–12',                   needed: 3, unit: 'batches'  },
+    { name: 'Elote en Vaso (Street Corn)', description: 'Mexican street corn cups, 12 servings each',    needed: 3, unit: 'batches'  },
+    { name: 'Queso Fundido',              description: 'With tortilla chips, serves 8–10',               needed: 2, unit: 'dishes'   },
+    { name: 'Arroz Rojo (Spanish Rice)',  description: 'Large serving dish, 12+ servings',               needed: 3, unit: 'dishes'   },
+    { name: 'Frijoles de Olla',           description: 'Slow-cooked pinto beans, large pot',             needed: 2, unit: 'pots'     },
+    { name: 'Pico de Gallo & Salsas',     description: 'Assorted fresh salsas, serves 20+',              needed: 4, unit: 'batches'  },
+    { name: 'Tres Leches Cake',           description: 'Serves 12–15 slices',                            needed: 2, unit: 'cakes'    },
+    { name: 'Churros & Chocolate Sauce',  description: '4 dozen pieces with dipping sauce',              needed: 2, unit: 'batches'  },
+    { name: 'Aguas Frescas',             description: 'Horchata, jamaica, or your favorite — serves 12+', needed: 3, unit: 'batches' },
+    { name: 'Sodas & Bottled Water',     description: 'Assorted sodas, sparkling water, or juice',        needed: 3, unit: 'packs'   }
   ]
 };
 
@@ -147,23 +147,25 @@ const APP = {
       }));
   },
 
-  async addSideItem(name, description, needed) {
+  async addSideItem(name, description, needed, unit) {
     const snap = await _db.collection('sideItems').get();
     await _db.collection('sideItems').add({
       name:         name.trim(),
       description:  (description || '').trim(),
       needed:       parseInt(needed) || 1,
+      unit:         (unit || '').trim(),
       claimedCount: 0,
       signups:      [],
       order:        snap.size
     });
   },
 
-  async updateSideItem(id, name, description, needed) {
+  async updateSideItem(id, name, description, needed, unit) {
     await _db.collection('sideItems').doc(id).update({
       name:        name.trim(),
       description: (description || '').trim(),
-      needed:      parseInt(needed) || 1
+      needed:      parseInt(needed) || 1,
+      unit:        (unit || '').trim()
     });
   },
 
@@ -187,6 +189,7 @@ const APP = {
   // ── RSVPs ──────────────────────────────────────────────────
 
   async submitRSVP(formData) {
+    const qty = Math.max(1, parseInt(formData.sideItemQuantity) || 1);
     const rsvp = {
       timestamp:            firebase.firestore.FieldValue.serverTimestamp(),
       firstName:            (formData.firstName            || '').trim(),
@@ -199,25 +202,31 @@ const APP = {
       dietaryRestrictions:  (formData.dietaryRestrictions  || '').trim(),
       contributionType:      formData.contributionType     || 'none',
       sideItemId:            formData.sideItemId           || null,
+      sideItemQuantity:      formData.contributionType === 'side_item' ? qty : 0,
       note:                 (formData.note                 || '').trim()
     };
 
-    // Atomically claim side item slot + create RSVP
+    // Atomically claim side item quantity + create RSVP
     if (rsvp.contributionType === 'side_item' && rsvp.sideItemId) {
       const itemRef = _db.collection('sideItems').doc(rsvp.sideItemId);
       const rsvpRef = _db.collection('rsvps').doc();
       await _db.runTransaction(async tx => {
         const itemDoc = await tx.get(itemRef);
         if (!itemDoc.exists) throw new Error('Side item not found.');
-        const item = itemDoc.data();
-        if ((item.claimedCount || 0) >= (item.needed || 1)) {
-          throw new Error('Sorry — that item was just fully claimed. Please choose another!');
+        const item      = itemDoc.data();
+        const remaining = (item.needed || 1) - (item.claimedCount || 0);
+        if (remaining <= 0) {
+          throw new Error('Sorry — that item is fully claimed. Please choose another!');
+        }
+        if (qty > remaining) {
+          throw new Error(`Sorry — only ${remaining} still needed. Please adjust your quantity and try again.`);
         }
         tx.update(itemRef, {
-          claimedCount: firebase.firestore.FieldValue.increment(1),
+          claimedCount: firebase.firestore.FieldValue.increment(qty),
           signups:      firebase.firestore.FieldValue.arrayUnion({
-            rsvpId: rsvpRef.id,
-            name:   `${rsvp.firstName} ${rsvp.lastName}`.trim()
+            rsvpId:   rsvpRef.id,
+            name:     `${rsvp.firstName} ${rsvp.lastName}`.trim(),
+            quantity: qty
           })
         });
         tx.set(rsvpRef, rsvp);
@@ -260,6 +269,7 @@ const APP = {
     const rsvp = doc.data();
 
     if (rsvp.contributionType === 'side_item' && rsvp.sideItemId) {
+      const qty     = rsvp.sideItemQuantity || 1; // backward compat: old RSVPs default to 1
       const itemRef = _db.collection('sideItems').doc(rsvp.sideItemId);
       await _db.runTransaction(async tx => {
         const itemDoc = await tx.get(itemRef);
@@ -267,7 +277,7 @@ const APP = {
           const item    = itemDoc.data();
           const signups = (item.signups || []).filter(s => s.rsvpId !== id);
           tx.update(itemRef, {
-            claimedCount: Math.max(0, (item.claimedCount || 1) - 1),
+            claimedCount: Math.max(0, (item.claimedCount || qty) - qty),
             signups
           });
         }
@@ -335,15 +345,15 @@ const APP = {
 
   exportCSV(rsvps, sideItems) {
     const headers = ['ID','First','Last','Email','Phone','Attending','Adults','Children',
-                     'Dietary','Contribution','Side Item','Note','Submitted'];
+                     'Dietary','Contribution','Side Item','Qty','Note','Submitted'];
     const rows = rsvps.map(r => {
-      const sideItem = r.sideItemId
-        ? ((sideItems.find(i => i.id === r.sideItemId) || {}).name || '')
-        : '';
+      const found    = r.sideItemId ? (sideItems.find(i => i.id === r.sideItemId) || {}) : {};
+      const sideItem = found.name || '';
+      const sideQty  = r.sideItemQuantity || (r.sideItemId ? 1 : '');
       return [
         r.id, r.firstName, r.lastName, r.email, r.phone,
         r.attending, r.adults, r.children, r.dietaryRestrictions,
-        r.contributionType, sideItem, r.note,
+        r.contributionType, sideItem, sideQty, r.note,
         r.timestamp ? new Date(r.timestamp).toLocaleString() : ''
       ].map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',');
     });

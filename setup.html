@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Setup — Cameron's 50th Fiesta</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=3" />
 </head>
 <body style="background:var(--warm-50);min-height:100vh;">
 
@@ -180,7 +180,7 @@
         <!-- Add new item -->
         <div style="background:var(--blue-50);border:1.5px solid var(--blue-200);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1.5rem;">
           <p style="font-family:var(--font-display);font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue-700);margin-bottom:1rem;">Add New Item</p>
-          <div class="form-row form-row-3" style="align-items:end;">
+          <div style="display:grid;grid-template-columns:2fr 3fr 70px 140px;gap:1rem;align-items:end;">
             <div class="form-group" style="margin-bottom:0;">
               <label for="new-item-name">Item Name</label>
               <input type="text" id="new-item-name" placeholder="e.g., Guacamole" />
@@ -190,8 +190,12 @@
               <input type="text" id="new-item-desc" placeholder="e.g., Fresh, serves 10–12" />
             </div>
             <div class="form-group" style="margin-bottom:0;">
-              <label for="new-item-needed">Qty Needed</label>
-              <input type="number" id="new-item-needed" min="1" max="99" value="2" style="max-width:80px;" />
+              <label for="new-item-needed">Qty</label>
+              <input type="number" id="new-item-needed" min="1" max="99" value="2" />
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="new-item-unit">Unit Label</label>
+              <input type="text" id="new-item-unit" placeholder="batches, dishes…" />
             </div>
           </div>
           <div style="margin-top:1rem;text-align:right;">
@@ -438,7 +442,7 @@
         row.id = `item-row-${item.id}`;
         row.style.cssText = 'background:#fff;border:1px solid var(--warm-100);border-radius:var(--radius-md);padding:1rem 1.25rem;margin-bottom:0.75rem;';
         row.innerHTML = `
-          <div style="display:grid;grid-template-columns:1fr 2fr 100px auto;gap:1rem;align-items:center;">
+          <div style="display:grid;grid-template-columns:1fr 2fr 80px 120px auto;gap:1rem;align-items:center;">
             <div>
               <div id="view-name-${item.id}" style="font-weight:700;font-size:0.9rem;color:var(--blue-800);">${esc(item.name)}</div>
               <div id="edit-name-wrap-${item.id}" class="hidden">
@@ -463,6 +467,14 @@
                   style="width:60px;padding:0.35rem 0.5rem;border:1.5px solid var(--blue-300);border-radius:var(--radius-sm);text-align:center;font-size:0.85rem;" />
               </div>
             </div>
+            <div>
+              <div id="view-unit-${item.id}" style="font-size:0.82rem;color:var(--text-500);">${esc(item.unit || '')}</div>
+              <div id="edit-unit-wrap-${item.id}" class="hidden">
+                <input type="text" id="edit-unit-${item.id}" value="${esc(item.unit || '')}"
+                  placeholder="batches, dishes…"
+                  style="width:100%;padding:0.35rem 0.5rem;border:1.5px solid var(--blue-300);border-radius:var(--radius-sm);font-size:0.82rem;" />
+              </div>
+            </div>
             <div style="display:flex;gap:0.5rem;">
               <div id="view-actions-${item.id}">
                 <button class="btn btn-outline btn-sm" onclick="startEdit('${item.id}')">✏ Edit</button>
@@ -479,7 +491,7 @@
     }
 
     window.startEdit = function (id) {
-      ['name','desc','needed'].forEach(f => {
+      ['name','desc','needed','unit'].forEach(f => {
         document.getElementById(`view-${f}-${id}`).classList.add('hidden');
         document.getElementById(`edit-${f}-wrap-${id}`).classList.remove('hidden');
       });
@@ -487,7 +499,7 @@
       document.getElementById(`edit-actions-${id}`).classList.remove('hidden');
     };
     window.cancelEdit = function (id) {
-      ['name','desc','needed'].forEach(f => {
+      ['name','desc','needed','unit'].forEach(f => {
         document.getElementById(`view-${f}-${id}`).classList.remove('hidden');
         document.getElementById(`edit-${f}-wrap-${id}`).classList.add('hidden');
       });
@@ -498,9 +510,10 @@
       const name   = document.getElementById(`edit-name-${id}`).value.trim();
       const desc   = document.getElementById(`edit-desc-${id}`).value.trim();
       const needed = document.getElementById(`edit-needed-${id}`).value;
+      const unit   = document.getElementById(`edit-unit-${id}`).value.trim();
       if (!name) { alert('Item name cannot be empty.'); return; }
       try {
-        await APP.updateSideItem(id, name, desc, needed);
+        await APP.updateSideItem(id, name, desc, needed, unit);
         _sideItems = await APP.getSideItems();
         renderSideItems();
         showAlert('Item updated. ✓', 'success');
@@ -511,12 +524,14 @@
       const name   = document.getElementById('new-item-name').value.trim();
       const desc   = document.getElementById('new-item-desc').value.trim();
       const needed = document.getElementById('new-item-needed').value;
+      const unit   = document.getElementById('new-item-unit').value.trim();
       if (!name) { alert('Please enter an item name.'); return; }
       try {
-        await APP.addSideItem(name, desc, needed);
+        await APP.addSideItem(name, desc, needed, unit);
         document.getElementById('new-item-name').value   = '';
         document.getElementById('new-item-desc').value   = '';
         document.getElementById('new-item-needed').value = '2';
+        document.getElementById('new-item-unit').value   = '';
         _sideItems = await APP.getSideItems();
         renderSideItems();
         showAlert('Item added! ✓', 'success');

@@ -21,8 +21,8 @@ service cloud.firestore {
           // Guest claiming a slot: only claimedCount & signups change
           request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['claimedCount', 'signups'])
-          // claimedCount must increase by exactly 1 and not exceed needed
-          && request.resource.data.claimedCount == resource.data.claimedCount + 1
+          // claimedCount must increase by at least 1 and not exceed needed
+          && request.resource.data.claimedCount > resource.data.claimedCount
           && request.resource.data.claimedCount <= resource.data.needed
         );
     }
