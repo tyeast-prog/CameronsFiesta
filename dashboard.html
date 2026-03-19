@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Host Dashboard — Cameron's 50th Fiesta</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body style="background:var(--warm-50);min-height:100vh;">
+
+  <!-- ── Auth Overlay ──────────────────────────────────────── -->
+  <div class="auth-overlay" id="auth-overlay">
+    <div class="auth-card">
+      <div style="font-size:2rem;margin-bottom:0.75rem;">🎊</div>
+      <h2>Host Dashboard</h2>
+      <p>Sign in with your host account to access the dashboard.</p>
+      <div class="form-group">
+        <label for="auth-email" style="text-align:left;display:block;">Email</label>
+        <input type="email" id="auth-email" placeholder="host@example.com" />
+      </div>
+      <div class="form-group">
+        <label for="auth-password" style="text-align:left;display:block;">Password</label>
+        <input type="password" id="auth-password" placeholder="Password" />
+      </div>
+      <button class="btn btn-primary" id="login-btn" onclick="doLogin()" style="width:100%;">Sign In</button>
+      <p class="auth-error hidden" id="auth-error"></p>
+    </div>
+  </div>
+
+  <!-- ── Admin Header ──────────────────────────────────────── -->
+  <header class="admin-header">
+    <div>
+      <h1>Host Dashboard</h1>
+      <p>Cameron's 50th Surprise Fiesta — <span id="header-user" style="color:var(--gold-400);"></span></p>
+    </div>
+    <div class="admin-header-actions">
+      <button class="btn btn-outline btn-sm" id="export-btn">⬇ Export CSV</button>
+      <a href="setup.html" class="btn btn-outline btn-sm">⚙ Setup</a>
+      <a href="index.html" class="btn btn-outline btn-sm">👁 View Invite</a>
+      <button class="btn btn-sm" style="background:transparent;color:var(--blue-200);border-color:var(--blue-700);" onclick="doLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- ── Admin Nav ─────────────────────────────────────────── -->
+  <nav class="admin-nav">
+    <ul>
+      <li><a href="#" class="active" data-tab="overview">Overview</a></li>
+      <li><a href="#" data-tab="sides">Side Dish Tracker</a></li>
+      <li><a href="#" data-tab="rsvps">RSVP List</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Body ──────────────────────────────────────────────── -->
+  <main class="admin-body">
+
+    <div id="dashboard-alert" class="hidden"></div>
+
+    <!-- Loading -->
+    <div id="loading-state" style="text-align:center;padding:3rem;color:var(--text-300);">
+      <div style="font-size:2rem;margin-bottom:0.5rem;">⏳</div>
+      <p>Loading dashboard…</p>
+    </div>
+
+    <!-- ═══ Overview Tab ════════════════════════════════════ -->
+    <div id="tab-overview" class="hidden">
+
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;" class="summary-cols">
+        <div class="table-container">
+          <div class="table-header"><h3>Attendance Breakdown</h3></div>
+          <table class="data-table"><tbody id="attendance-breakdown"></tbody></table>
+        </div>
+        <div class="table-container">
+          <div class="table-header"><h3>Contributions Summary</h3></div>
+          <table class="data-table"><tbody id="contributions-summary"></tbody></table>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <h3>Side Dish Progress</h3>
+          <a href="#" class="btn btn-sm btn-outline" onclick="switchTab('sides');return false;">View Full Tracker</a>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Item</th><th>Needed</th><th>Claimed</th><th>Remaining</th><th>Progress</th></tr>
+          </thead>
+          <tbody id="side-progress-table"></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- ═══ Side Dish Tab ════════════════════════════════════ -->
+    <div id="tab-sides" class="hidden">
+      <div style="margin-bottom:1.5rem;">
+        <h2 style="font-family:var(--font-display);font-size:1rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue-800);">Side Dish Tracker</h2>
+        <p style="font-size:0.85rem;color:var(--text-500);margin-top:0.25rem;">Track what's been claimed and what's still needed</p>
+      </div>
+      <div class="side-items-grid" id="side-items-detail"></div>
+    </div>
+
+    <!-- ═══ RSVP List Tab ════════════════════════════════════ -->
+    <div id="tab-rsvps" class="hidden">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap;">
+        <div>
+          <h2 style="font-family:var(--font-display);font-size:1rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue-800);">All RSVPs</h2>
+          <p id="rsvp-count-label" style="font-size:0.85rem;color:var(--text-500);margin-top:0.25rem;"></p>
+        </div>
+        <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+          <input type="text" id="rsvp-search" placeholder="Search name or email…"
+            style="padding:0.45rem 0.75rem;border:1.5px solid var(--blue-200);border-radius:var(--radius-md);font-size:0.85rem;min-width:200px;" />
+          <select id="rsvp-filter-attending"
+            style="padding:0.45rem 0.75rem;border:1.5px solid var(--blue-200);border-radius:var(--radius-md);font-size:0.85rem;">
+            <option value="">All Responses</option>
+            <option value="yes">Yes</option>
+            <option value="maybe">Maybe</option>
+            <option value="no">No</option>
+          </select>
+          <button class="btn btn-outline btn-sm" id="export-btn-2">⬇ Export CSV</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table" id="rsvp-table">
+          <thead>
+            <tr>
+              <th>Name</th><th>Contact</th><th>Attending</th>
+              <th style="text-align:center;">Adults</th><th style="text-align:center;">Children</th>
+              <th>Contribution</th><th>Dietary</th><th>Submitted</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="rsvp-tbody"></tbody>
+        </table>
+        <div id="rsvp-empty" class="hidden" style="text-align:center;padding:3rem;color:var(--text-300);">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem;">📭</div>
+          <p>No RSVPs yet. Share the invitation link to get started!</p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ── Delete Confirm Modal ──────────────────────────────── -->
+  <div class="auth-overlay hidden" id="delete-modal" style="z-index:500;">
+    <div class="auth-card" style="max-width:360px;">
+      <div style="font-size:2rem;margin-bottom:0.75rem;">⚠️</div>
+      <h2>Delete RSVP?</h2>
+      <p id="delete-name" style="font-weight:700;color:var(--blue-800);font-size:1rem;margin:0.5rem 0 1rem;"></p>
+      <p>This permanently removes their RSVP and releases any side dish claim.</p>
+      <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" style="flex:1;" id="confirm-delete-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Firebase SDK ──────────────────────────────────────── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+    APP.init();
+
+    // Live data snapshots
+    let _rsvps     = [];
+    let _sideItems = [];
+    let _unsubRSVP = null;
+
+    /* ── Auth ───────────────────────────────────────── */
+    APP.onAuthStateChanged(async (user) => {
+      if (user) {
+        document.getElementById('auth-overlay').classList.add('hidden');
+        document.getElementById('header-user').textContent = user.email;
+        await loadDashboard();
+      } else {
+        document.getElementById('auth-overlay').classList.remove('hidden');
+        document.getElementById('loading-state').classList.add('hidden');
+        if (_unsubRSVP) { _unsubRSVP(); _unsubRSVP = null; }
+      }
+    });
+
+    window.doLogin = async function () {
+      const btn = document.getElementById('login-btn');
+      const email    = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const errEl    = document.getElementById('auth-error');
+      errEl.classList.add('hidden');
+      btn.disabled   = true;
+      btn.textContent = 'Signing in…';
+      try {
+        await APP.signIn(email, password);
+        // onAuthStateChanged handles the rest
+      } catch (e) {
+        errEl.textContent = friendlyAuthError(e.code);
+        errEl.classList.remove('hidden');
+        btn.disabled    = false;
+        btn.textContent = 'Sign In';
+      }
+    };
+
+    window.doLogout = async function () {
+      await APP.signOut();
+    };
+
+    ['auth-email','auth-password'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') doLogin();
+      });
+    });
+
+    function friendlyAuthError(code) {
+      const map = {
+        'auth/user-not-found':    'No account found with that email.',
+        'auth/wrong-password':    'Incorrect password.',
+        'auth/invalid-email':     'Please enter a valid email.',
+        'auth/too-many-requests': 'Too many attempts. Please try again later.'
+      };
+      return map[code] || 'Sign-in failed. Please check your credentials.';
+    }
+
+    /* ── Load Dashboard ──────────────────────────────── */
+    async function loadDashboard() {
+      document.getElementById('loading-state').classList.remove('hidden');
+      _sideItems = await APP.getSideItems();
+
+      // Real-time RSVP listener
+      _unsubRSVP = APP.onRSVPs(rsvps => {
+        _rsvps = rsvps;
+        document.getElementById('loading-state').classList.add('hidden');
+        showTabs();
+        renderAll();
+        if (document.getElementById('tab-rsvps').classList.contains('hidden') === false) {
+          applyFilters();
+        }
+      });
+
+      document.getElementById('export-btn').onclick  = () => APP.exportCSV(_rsvps, _sideItems);
+      document.getElementById('export-btn-2').onclick = () => APP.exportCSV(_rsvps, _sideItems);
+    }
+
+    function showTabs() {
+      document.getElementById('tab-overview').classList.remove('hidden');
+    }
+
+    /* ── Tabs ────────────────────────────────────────── */
+    const tabs = ['overview', 'sides', 'rsvps'];
+
+    window.switchTab = function (name) {
+      tabs.forEach(t => document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name));
+      document.querySelectorAll('.admin-nav a').forEach(a => a.classList.toggle('active', a.dataset.tab === name));
+      if (name === 'rsvps') applyFilters();
+    };
+
+    document.querySelectorAll('.admin-nav a').forEach(a => {
+      a.addEventListener('click', e => { e.preventDefault(); switchTab(a.dataset.tab); });
+    });
+
+    /* ── Render All ──────────────────────────────────── */
+    function renderAll() {
+      const stats = APP.getStats(_rsvps, _sideItems);
+      renderStats(stats);
+      renderSideDetails();
+      renderSideProgress();
+    }
+
+    /* Stats */
+    function renderStats(s) {
+      const cards = [
+        { label: 'Total RSVPs',        value: s.total,        cls: ''      },
+        { label: 'Attending Yes',      value: s.yes,          cls: 'green' },
+        { label: 'Maybe Attending',    value: s.maybe,        cls: 'gold'  },
+        { label: 'Declined',           value: s.no,           cls: 'muted' },
+        { label: 'Total Guests',       value: s.totalGuests,  cls: ''      },
+        { label: 'Adults',             value: s.totalAdults,  cls: ''      },
+        { label: 'Children',           value: s.totalChildren,cls: ''      },
+        { label: 'Side Dishes Claimed',value: `${s.sideClaimed}/${s.sideNeeded}`, cls: 'gold'  },
+        { label: 'Main Course Pledges',value: s.donations,    cls: 'green' }
+      ];
+      document.getElementById('stats-grid').innerHTML =
+        cards.map(c => `<div class="stat-card ${c.cls}">
+          <div class="stat-value">${c.value}</div>
+          <div class="stat-label">${c.label}</div></div>`).join('');
+
+      document.getElementById('attendance-breakdown').innerHTML = `
+        <tr><td>Confirmed Yes</td><td><span class="badge badge-yes">${s.yes}</span></td></tr>
+        <tr><td>Hopefully Attending</td><td><span class="badge badge-maybe">${s.maybe}</span></td></tr>
+        <tr><td>Declined</td><td><span class="badge badge-no">${s.no}</span></td></tr>
+        <tr><td>Total Adults (Yes+Maybe)</td><td><strong>${s.totalAdults}</strong></td></tr>
+        <tr><td>Total Children (Yes+Maybe)</td><td><strong>${s.totalChildren}</strong></td></tr>
+        <tr><td><strong>Estimated Total Guests</strong></td>
+            <td><strong style="color:var(--blue-700);font-size:1.1rem;">${s.totalGuests}</strong></td></tr>`;
+
+      document.getElementById('contributions-summary').innerHTML = `
+        <tr><td>Bringing a Side Dish</td><td><span class="badge badge-side">${s.sideSignups}</span></td></tr>
+        <tr><td>Main Course Contribution</td><td><span class="badge badge-donation">${s.donations}</span></td></tr>
+        <tr><td>Side Dish Spots Needed</td><td>${s.sideNeeded}</td></tr>
+        <tr><td>Side Dish Spots Claimed</td><td>${s.sideClaimed}</td></tr>
+        <tr><td><strong>Still Needed</strong></td>
+            <td><strong style="color:${s.sideRemaining > 0 ? 'var(--warning)' : 'var(--success)'};">${s.sideRemaining}</strong></td></tr>`;
+    }
+
+    /* Side progress overview table */
+    function renderSideProgress() {
+      document.getElementById('side-progress-table').innerHTML = _sideItems.map(item => {
+        const claimed = item.claimedCount || 0;
+        const pct     = Math.round((claimed / Math.max(item.needed, 1)) * 100);
+        return `<tr>
+          <td>${item.name}</td>
+          <td style="text-align:center;">${item.needed}</td>
+          <td style="text-align:center;">${claimed}</td>
+          <td style="text-align:center;color:${item.needed - claimed > 0 ? 'var(--warning)' : 'var(--success)'};">${Math.max(0, item.needed - claimed)}</td>
+          <td style="min-width:120px;">
+            <div class="progress-bar"><div class="progress-fill ${pct >= 100 ? 'full' : ''}" style="width:${Math.min(pct,100)}%;"></div></div>
+            <span style="font-size:0.7rem;color:var(--text-300);">${pct}%</span>
+          </td></tr>`;
+      }).join('');
+    }
+
+    /* Side Dish detail cards */
+    function renderSideDetails() {
+      const container = document.getElementById('side-items-detail');
+      container.innerHTML = '';
+      _sideItems.forEach(item => {
+        const claimed   = item.claimedCount || 0;
+        const remaining = item.needed - claimed;
+        const full      = remaining <= 0;
+        const pct       = Math.round((claimed / Math.max(item.needed, 1)) * 100);
+        const signups   = item.signups || [];
+        const card      = document.createElement('div');
+        card.className  = `side-item-card ${full ? 'fully-claimed' : ''}`;
+        card.innerHTML  = `
+          <h4>${item.name}${full ? ' ✅' : ''}</h4>
+          <p class="item-desc">${item.description || ''}</p>
+          <div class="progress-bar" style="margin-top:0.5rem;">
+            <div class="progress-fill ${full ? 'full' : ''}" style="width:${Math.min(pct,100)}%;"></div>
+          </div>
+          <p class="item-count">${claimed} of ${item.needed} claimed${remaining > 0
+            ? ` — <span style="color:var(--warning);">${remaining} still needed</span>`
+            : ' — <span style="color:var(--success);">All claimed!</span>'}</p>
+          ${signups.length
+            ? `<ul class="signups-list">${signups.map(s => `<li>${s.name}</li>`).join('')}</ul>`
+            : '<p style="font-size:0.78rem;color:var(--text-300);margin-top:0.5rem;font-style:italic;">No claims yet</p>'}`;
+        container.appendChild(card);
+      });
+    }
+
+    /* ── RSVP Table ──────────────────────────────────── */
+    function applyFilters() {
+      const search  = document.getElementById('rsvp-search').value.toLowerCase();
+      const att     = document.getElementById('rsvp-filter-attending').value;
+      let list = _rsvps;
+      if (search) list = list.filter(r => `${r.firstName} ${r.lastName} ${r.email}`.toLowerCase().includes(search));
+      if (att)    list = list.filter(r => r.attending === att);
+
+      document.getElementById('rsvp-count-label').textContent =
+        `Showing ${list.length} of ${_rsvps.length} RSVP${_rsvps.length !== 1 ? 's' : ''}`;
+      renderRSVPTable(list);
+    }
+
+    document.getElementById('rsvp-search').addEventListener('input', applyFilters);
+    document.getElementById('rsvp-filter-attending').addEventListener('change', applyFilters);
+
+    function renderRSVPTable(list) {
+      const tbody = document.getElementById('rsvp-tbody');
+      const empty = document.getElementById('rsvp-empty');
+      if (!list.length) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+
+      tbody.innerHTML = list.map(r => {
+        const sideItem    = r.sideItemId ? ((_sideItems.find(i => i.id === r.sideItemId) || {}).name || '') : '';
+        const contribText = { side_item: `Side dish${sideItem ? ': ' + sideItem : ''}`, donation: 'Main course', none: '—' }[r.contributionType] || '—';
+        const badgeCls    = { yes: 'badge-yes', maybe: 'badge-maybe', no: 'badge-no' }[r.attending] || '';
+        const dateStr     = r.timestamp ? new Date(r.timestamp).toLocaleDateString() + ' ' + new Date(r.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—';
+
+        return `<tr>
+          <td><strong>${r.firstName} ${r.lastName}</strong>${r.note ? '<br><span style="font-size:0.75rem;color:var(--text-300);">📝 Has note</span>' : ''}</td>
+          <td>${r.email}<br><span style="font-size:0.78rem;color:var(--text-300);">${r.phone || ''}</span></td>
+          <td><span class="badge ${badgeCls}">${r.attending === 'yes' ? 'Yes' : r.attending === 'maybe' ? 'Maybe' : 'No'}</span></td>
+          <td style="text-align:center;">${r.attending !== 'no' ? r.adults   : '—'}</td>
+          <td style="text-align:center;">${r.attending !== 'no' ? r.children : '—'}</td>
+          <td style="font-size:0.82rem;">${contribText}</td>
+          <td style="font-size:0.78rem;max-width:120px;white-space:normal;">${r.dietaryRestrictions || '—'}</td>
+          <td style="font-size:0.75rem;white-space:nowrap;color:var(--text-500);">${dateStr}</td>
+          <td><button class="btn btn-sm btn-danger" onclick="confirmDelete('${r.id}','${esc(r.firstName)} ${esc(r.lastName)}')">✕</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    /* ── Delete ──────────────────────────────────────── */
+    let _pendingId = null;
+
+    window.confirmDelete = function (id, name) {
+      _pendingId = id;
+      document.getElementById('delete-name').textContent = name;
+      document.getElementById('delete-modal').classList.remove('hidden');
+    };
+    window.closeDeleteModal = function () {
+      _pendingId = null;
+      document.getElementById('delete-modal').classList.add('hidden');
+    };
+
+    document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+      if (!_pendingId) return;
+      document.getElementById('confirm-delete-btn').textContent = 'Deleting…';
+      try {
+        await APP.deleteRSVP(_pendingId);
+        _sideItems = await APP.getSideItems(); // refresh side items counts
+        closeDeleteModal();
+        showAlert('RSVP deleted.', 'success');
+      } catch(e) {
+        showAlert('Delete failed: ' + e.message, 'danger');
+      }
+      document.getElementById('confirm-delete-btn').textContent = 'Delete';
+    });
+
+    /* ── Helpers ─────────────────────────────────────── */
+    function esc(s) { return String(s||'').replace(/'/g,"&#39;"); }
+
+    function showAlert(msg, type = 'info') {
+      const el = document.getElementById('dashboard-alert');
+      el.className = `alert alert-${type}`;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 4000);
+    }
+
+  })();
+  </script>
+
+</body>
+</html>

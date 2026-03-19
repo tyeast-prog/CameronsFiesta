@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cameron's 50th Surprise Fiesta</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ── Surprise Banner ─────────────────────────────────── -->
+  <div class="surprise-banner">
+    <span class="shhh">🤫</span>
+    SHHHH! This is a SURPRISE — Please do not tell Cameron!
+    <span class="shhh">🤫</span>
+  </div>
+
+  <!-- ── Navigation ──────────────────────────────────────── -->
+  <nav class="navbar">
+    <span class="navbar-brand">Cameron's Fiesta · 50</span>
+    <ul class="navbar-links">
+      <li><a href="#details">Details</a></li>
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#rsvp">RSVP</a></li>
+      <li><a href="dashboard.html">Host Login</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Papel Picado ─────────────────────────────────────── -->
+  <div class="papel-picado"></div>
+
+  <!-- ── Hero ─────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="hero-eyebrow">You're Invited!</p>
+      <div class="hero-age-badge">50</div>
+      <h1 class="hero-title">
+        Cameron's
+        <span>Surprise Fiesta</span>
+      </h1>
+      <p class="hero-subtitle" id="hero-subtitle">Celebrating 50 Years of Making Life Extraordinary</p>
+      <p id="hero-welcome" style="color:rgba(255,255,255,0.75);font-size:0.95rem;max-width:540px;margin:0 auto 2rem;line-height:1.7;"></p>
+      <a href="#rsvp" class="hero-cta">RSVP Now</a>
+    </div>
+  </section>
+
+  <!-- ── Details Cards ────────────────────────────────────── -->
+  <section id="details" class="info-cards-section">
+    <div class="container">
+      <div class="section-heading">
+        <h2>Evening Details</h2>
+        <hr class="gold-rule" />
+        <p class="subtitle">Everything you need to know</p>
+      </div>
+      <div class="info-cards-grid">
+
+        <div class="info-card">
+          <div class="info-card-icon">📅</div>
+          <h3>Date &amp; Time</h3>
+          <p class="card-primary" id="card-date">—</p>
+          <p class="card-secondary" id="card-time">—</p>
+          <p class="card-note" id="card-deadline"></p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-icon">📍</div>
+          <h3>Venue</h3>
+          <p class="card-primary" id="card-venue-name">—</p>
+          <p class="card-secondary" id="card-venue-address"></p>
+          <p class="card-secondary" id="card-venue-city"></p>
+          <p class="card-note" id="card-venue-notes"></p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-icon">👔</div>
+          <h3>Dress Code</h3>
+          <p class="card-primary" id="card-dress-code">—</p>
+          <p class="card-secondary" id="card-dress-note"></p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Menu ──────────────────────────────────────────────── -->
+  <section id="menu" class="menu-section">
+    <div class="container">
+      <div class="section-heading">
+        <h2>La Mesa</h2>
+        <hr class="gold-rule" />
+        <p class="subtitle">An Authentic Mexican Fiesta</p>
+      </div>
+      <div class="menu-grid" id="menu-grid">
+        <div class="menu-card" style="opacity:0.4;grid-column:1/-1;text-align:center;">
+          <p style="color:var(--gold-300);font-style:italic;">Loading menu…</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="papel-picado" style="transform:rotate(180deg);"></div>
+
+  <!-- ── RSVP ──────────────────────────────────────────────── -->
+  <section id="rsvp" class="rsvp-section">
+    <div class="container">
+      <div class="section-heading">
+        <h2>¿Vendrás?</h2>
+        <hr class="gold-rule" />
+        <p class="subtitle" id="rsvp-deadline-text">Please let us know!</p>
+      </div>
+
+      <div class="rsvp-form-container">
+
+        <form id="rsvp-form">
+
+          <!-- Name -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name <span style="color:var(--danger)">*</span></label>
+              <input type="text" id="firstName" placeholder="First name" required />
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name <span style="color:var(--danger)">*</span></label>
+              <input type="text" id="lastName" placeholder="Last name" required />
+            </div>
+          </div>
+
+          <!-- Contact -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email Address <span style="color:var(--danger)">*</span></label>
+              <input type="email" id="email" placeholder="you@example.com" required />
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone <span style="color:var(--text-300);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+              <input type="tel" id="phone" placeholder="(555) 000-0000" />
+            </div>
+          </div>
+
+          <!-- Attending -->
+          <div class="form-group">
+            <label>Will you be joining us? <span style="color:var(--danger)">*</span></label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="attending" value="yes" required />
+                <span>¡Sí! Wouldn't miss it! 🎉</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="attending" value="maybe" />
+                <span>Hopefully I can make it!</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="attending" value="no" />
+                <span>Sadly, I can't make it.</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Guest Details -->
+          <div id="guest-section" class="hidden">
+            <hr class="form-divider" />
+            <p class="form-section-title">Your Party</p>
+
+            <div class="form-row form-row-3">
+              <div class="form-group">
+                <label for="adults">Adults <span style="color:var(--danger)">*</span></label>
+                <input type="number" id="adults" min="1" max="20" value="1" />
+              </div>
+              <div class="form-group">
+                <label for="children">Children <span style="color:var(--text-300);font-weight:400;text-transform:none;letter-spacing:0">(10 &amp; under)</span></label>
+                <input type="number" id="children" min="0" max="20" value="0" />
+              </div>
+              <div class="form-group">
+                <label>Total Guests</label>
+                <div class="total-display" id="total-guests">1</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="dietary">Dietary Restrictions or Allergies <span style="color:var(--text-300);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+              <textarea id="dietary" rows="2" placeholder="e.g., vegetarian, nut allergy, gluten-free…"></textarea>
+            </div>
+
+            <hr class="form-divider" />
+
+            <!-- Contribution Section -->
+            <div class="contribution-section">
+              <h4>
+                Support the Fiesta
+                <span class="optional-badge">Completely Optional</span>
+              </h4>
+              <p class="contribution-note">
+                Want to help make Cameron's evening extra special? We'd love any support!
+                Your presence alone is our greatest gift — but if you'd like to pitch in, here are a couple of ways:
+              </p>
+
+              <div class="contribution-options">
+
+                <label class="contribution-option">
+                  <input type="radio" name="contribution" value="side_item" id="contrib-side" />
+                  <span>
+                    <span class="option-title">Bring a Side Dish or Dessert</span>
+                    <span class="option-desc">Choose from our list of needed items — first come, first served</span>
+                  </span>
+                </label>
+
+                <label class="contribution-option">
+                  <input type="radio" name="contribution" value="donation" />
+                  <span>
+                    <span class="option-title">Contribute Toward the Main Course</span>
+                    <span class="option-desc">Help offset the cost of our carne asada, al pastor &amp; mole — every bit helps!</span>
+                  </span>
+                </label>
+
+                <label class="contribution-option">
+                  <input type="radio" name="contribution" value="none" checked />
+                  <span>
+                    <span class="option-title">Just Bringing My Wonderful Self!</span>
+                    <span class="option-desc">Your presence is the best gift Cameron could receive</span>
+                  </span>
+                </label>
+
+              </div>
+
+              <!-- Donation Payment Info -->
+              <div id="donation-info" class="donation-info hidden">
+                <p class="donation-intro">Thank you so much! 💙 You can send your contribution via either of the options below:</p>
+                <div class="payment-methods">
+                  <div class="payment-method">
+                    <div class="payment-logo zelle-logo">Z</div>
+                    <div class="payment-details">
+                      <span class="payment-name">Zelle</span>
+                      <span class="payment-handle">Mistie Forehand</span>
+                      <span class="payment-handle">727-744-3121</span>
+                    </div>
+                  </div>
+                  <div class="payment-method">
+                    <div class="payment-logo cashapp-logo">$</div>
+                    <div class="payment-details">
+                      <span class="payment-name">Cash App</span>
+                      <span class="payment-handle">$MisTyifed</span>
+                    </div>
+                  </div>
+                </div>
+                <p class="donation-note">Any amount is deeply appreciated — no pressure at all! 🎉</p>
+              </div>
+
+              <!-- Side Item Selector -->
+              <div id="side-item-selector" class="side-item-selector hidden">
+                <label for="sideItemSelect">Choose Your Item <span style="color:var(--danger)">*</span></label>
+                <select id="sideItemSelect">
+                  <option value="">— Select an available item —</option>
+                </select>
+                <p class="helper-text">Remaining spots shown. Claim yours before they're gone!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Declined note -->
+          <div id="declined-section" class="hidden">
+            <p class="declined-note">We'll miss you! Feel free to leave a kind word for Cameron below. 💙</p>
+          </div>
+
+          <!-- Note -->
+          <div class="form-group mt-md">
+            <label for="note">Leave a Message for Cameron <span style="color:var(--text-300);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+            <textarea id="note" rows="3" placeholder="Share a birthday wish, a fond memory, or simply say hello!"></textarea>
+          </div>
+
+          <!-- Submit error -->
+          <div id="submit-error" class="alert alert-danger hidden mt-md"></div>
+
+          <div class="form-submit-row">
+            <button type="submit" id="submit-btn" class="btn btn-gold btn-lg">
+              Submit My RSVP &nbsp;🎉
+            </button>
+          </div>
+
+        </form>
+
+        <!-- Success State -->
+        <div id="rsvp-success" class="rsvp-success hidden">
+          <div class="success-icon">🎊</div>
+          <h3 id="success-title">¡Gracias!</h3>
+          <p id="success-message"></p>
+          <div class="summary-box" id="summary-box"></div>
+          <p style="font-size:0.8rem;color:var(--text-300);margin-top:1rem;">
+            Remember — this is a SURPRISE! Do not mention this event to Cameron. 🤫
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-brand">Cameron's 50th · Fiesta Celebration</p>
+      <p id="footer-contact"></p>
+      <p style="margin-top:1rem;opacity:0.4;font-size:0.75rem;">© 2025 — Hosted with love</p>
+    </div>
+  </footer>
+
+  <!-- ── Firebase SDK ──────────────────────────────────────── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    APP.init();
+
+    /* ── Load page data ──────────────────────────────── */
+    async function loadPage() {
+      try {
+        const [ev, menu, available] = await Promise.all([
+          APP.getEventData(),
+          APP.getMenu(),
+          APP.getAvailableSideItems()
+        ]);
+        populateDetails(ev);
+        buildMenu(menu);
+        populateSideItems(available);
+        _availableItems = available;
+      } catch (e) {
+        console.error('Page load error:', e);
+      }
+    }
+
+    function populateDetails(ev) {
+      setText('hero-subtitle',       ev.heroSubtitle    || '');
+      setText('hero-welcome',        ev.welcomeMessage  || '');
+      setText('card-date',           ev.date            || '');
+      setText('card-time',           `${ev.time || ''}${ev.endTime ? ' – ' + ev.endTime : ''}`);
+      setText('card-deadline',       ev.rsvpDeadline    ? 'RSVP by ' + ev.rsvpDeadline : '');
+      setText('card-venue-name',     ev.venueName       || '');
+      setText('card-venue-address',  ev.venueAddress    || '');
+      setText('card-venue-city',     ev.venueCity       || '');
+      setText('card-venue-notes',    ev.venueNotes      || '');
+      setText('card-dress-code',     ev.dressCode       || '');
+      setText('card-dress-note',     ev.dressCodeNote   || '');
+      setText('rsvp-deadline-text',  ev.rsvpDeadline
+        ? `Please let us know by ${ev.rsvpDeadline}` : 'Let us know if you can make it!');
+
+      const fc = document.getElementById('footer-contact');
+      if (ev.contactEmail || ev.contactPhone) {
+        fc.innerHTML = 'Questions? ' +
+          (ev.contactEmail ? `<a href="mailto:${ev.contactEmail}">${ev.contactEmail}</a>` : '') +
+          (ev.contactEmail && ev.contactPhone ? '  ·  ' : '') +
+          (ev.contactPhone || '');
+      }
+    }
+
+    function buildMenu(menu) {
+      const grid = document.getElementById('menu-grid');
+      grid.innerHTML = '';
+      (menu || []).forEach(section => {
+        const card = document.createElement('div');
+        card.className = 'menu-card';
+        card.innerHTML = `
+          <p class="menu-card-title">${section.title}</p>
+          <p class="menu-card-subtitle">${section.subtitle}</p>
+          <ul>${(section.items || []).map(i => `<li>${i}</li>`).join('')}</ul>`;
+        grid.appendChild(card);
+      });
+    }
+
+    let _availableItems = [];
+
+    function populateSideItems(items) {
+      const select = document.getElementById('sideItemSelect');
+      const sideLabel = document.querySelector('[for="sideItemSelect"]')?.closest('.side-item-selector');
+      select.innerHTML = '<option value="">— Select an available item —</option>';
+
+      if (items.length === 0) {
+        select.innerHTML = '<option value="" disabled>All items have been claimed — thank you!</option>';
+        document.getElementById('contrib-side').disabled = true;
+        const label = document.querySelector('label:has(#contrib-side)');
+        if (label) label.style.opacity = '0.5';
+      } else {
+        items.forEach(item => {
+          const opt = document.createElement('option');
+          opt.value = item.id;
+          opt.textContent = `${item.name}  (${item.remaining} of ${item.needed} spots left)`;
+          select.appendChild(opt);
+        });
+      }
+    }
+
+    /* ── Form Logic ─────────────────────────────────── */
+    const form            = document.getElementById('rsvp-form');
+    const guestSection    = document.getElementById('guest-section');
+    const declinedSection = document.getElementById('declined-section');
+    const sideSelector    = document.getElementById('side-item-selector');
+    const adultsInput     = document.getElementById('adults');
+    const childrenInput   = document.getElementById('children');
+    const totalDisplay    = document.getElementById('total-guests');
+    const submitBtn       = document.getElementById('submit-btn');
+    const errorDiv        = document.getElementById('submit-error');
+    const successDiv      = document.getElementById('rsvp-success');
+
+    document.querySelectorAll('input[name="attending"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const val = r.value;
+        guestSection.classList.toggle('hidden',    val === 'no');
+        declinedSection.classList.toggle('hidden', val !== 'no');
+        if (val !== 'no') populateSideItems(_availableItems);
+      });
+    });
+
+    function updateTotal() {
+      totalDisplay.textContent = (parseInt(adultsInput.value) || 0) + (parseInt(childrenInput.value) || 0);
+    }
+    adultsInput.addEventListener('input',   updateTotal);
+    childrenInput.addEventListener('input', updateTotal);
+
+    const donationInfo = document.getElementById('donation-info');
+
+    document.querySelectorAll('input[name="contribution"]').forEach(r => {
+      r.addEventListener('change', () => {
+        sideSelector.classList.toggle('hidden',  r.value !== 'side_item');
+        donationInfo.classList.toggle('hidden',  r.value !== 'donation');
+      });
+    });
+
+    /* ── Submit ─────────────────────────────────────── */
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      errorDiv.classList.add('hidden');
+
+      const attending = document.querySelector('input[name="attending"]:checked')?.value;
+      if (!attending) { showError('Please let us know if you\'ll be attending.'); return; }
+
+      const contribution = document.querySelector('input[name="contribution"]:checked')?.value || 'none';
+      const sideItemId   = document.getElementById('sideItemSelect').value;
+      if (contribution === 'side_item' && !sideItemId) {
+        showError('Please select a side dish item, or choose a different option.'); return;
+      }
+
+      submitBtn.disabled   = true;
+      submitBtn.textContent = 'Submitting…';
+
+      try {
+        const id = await APP.submitRSVP({
+          firstName:           document.getElementById('firstName').value,
+          lastName:            document.getElementById('lastName').value,
+          email:               document.getElementById('email').value,
+          phone:               document.getElementById('phone').value,
+          attending,
+          adults:              attending !== 'no' ? (adultsInput.value   || 1) : 0,
+          children:            attending !== 'no' ? (childrenInput.value || 0) : 0,
+          dietaryRestrictions: document.getElementById('dietary').value,
+          contributionType:    attending !== 'no' ? contribution : 'none',
+          sideItemId:          attending !== 'no' && contribution === 'side_item' ? sideItemId : null,
+          note:                document.getElementById('note').value
+        });
+        showSuccess(attending, contribution, sideItemId);
+      } catch (err) {
+        showError(err.message || 'Something went wrong. Please try again.');
+        submitBtn.disabled   = false;
+        submitBtn.textContent = 'Submit My RSVP 🎉';
+      }
+    });
+
+    function showError(msg) {
+      errorDiv.textContent = msg;
+      errorDiv.classList.remove('hidden');
+      errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function showSuccess(attending, contribution, sideItemId) {
+      form.classList.add('hidden');
+      successDiv.classList.remove('hidden');
+
+      const fn = document.getElementById('firstName').value;
+      document.getElementById('success-title').textContent   = attending === 'no' ? 'We\'ll Miss You!' : '¡Gracias! See You There!';
+      document.getElementById('success-message').textContent = attending === 'no'
+        ? `Thank you for letting us know, ${fn}. We hope to celebrate with you another time!`
+        : `You're all set, ${fn}! We can't wait to celebrate Cameron's 50th with you. Don't forget — it's a SURPRISE! 🤫`;
+
+      const contribMap = {
+        side_item: 'Bringing a side dish',
+        donation:  'Contributing to main course',
+        none:      'Just attending'
+      };
+      const sideItemName = sideItemId
+        ? ((_availableItems.find(i => i.id === sideItemId) || {}).name || '')
+        : '';
+
+      const rows = [
+        ['Name',      `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`],
+        ['Attending', attending === 'yes' ? '¡Sí! Attending 🎉' : attending === 'maybe' ? 'Hopefully attending' : 'Unable to attend'],
+        attending !== 'no' ? ['Adults',   adultsInput.value]   : null,
+        attending !== 'no' ? ['Children', childrenInput.value] : null,
+        attending !== 'no' && contribution !== 'none'
+          ? ['Contribution', contribMap[contribution] + (sideItemName ? ` — ${sideItemName}` : '')]
+          : null
+      ].filter(Boolean);
+
+      document.getElementById('summary-box').innerHTML = rows.map(([l, v]) => `
+        <div class="summary-row">
+          <span class="summary-label">${l}</span>
+          <span class="summary-value">${v}</span>
+        </div>`).join('');
+
+      successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    /* ── Init ────────────────────────────────────────── */
+    loadPage();
+  })();
+  </script>
+
+</body>
+</html>

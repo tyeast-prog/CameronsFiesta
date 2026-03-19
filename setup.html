@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup — Cameron's 50th Fiesta</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body style="background:var(--warm-50);min-height:100vh;">
+
+  <!-- ── Auth Overlay ──────────────────────────────────────── -->
+  <div class="auth-overlay" id="auth-overlay">
+    <div class="auth-card">
+      <div style="font-size:2rem;margin-bottom:0.75rem;">⚙️</div>
+      <h2>Event Setup</h2>
+      <p>Sign in with your host account to manage event settings.</p>
+      <div class="form-group">
+        <label for="auth-email" style="text-align:left;display:block;">Email</label>
+        <input type="email" id="auth-email" placeholder="host@example.com" />
+      </div>
+      <div class="form-group">
+        <label for="auth-password" style="text-align:left;display:block;">Password</label>
+        <input type="password" id="auth-password" placeholder="Password" />
+      </div>
+      <button class="btn btn-primary" id="login-btn" onclick="doLogin()" style="width:100%;">Sign In</button>
+      <p class="auth-error hidden" id="auth-error"></p>
+    </div>
+  </div>
+
+  <!-- ── Admin Header ──────────────────────────────────────── -->
+  <header class="admin-header">
+    <div>
+      <h1>Event Setup</h1>
+      <p>Configure all details for Cameron's Surprise Fiesta</p>
+    </div>
+    <div class="admin-header-actions">
+      <a href="dashboard.html" class="btn btn-outline btn-sm">📊 Dashboard</a>
+      <a href="index.html" class="btn btn-outline btn-sm">👁 View Invite</a>
+      <button class="btn btn-sm" style="background:transparent;color:var(--blue-200);border-color:var(--blue-700);" onclick="doLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- ── Admin Nav ─────────────────────────────────────────── -->
+  <nav class="admin-nav">
+    <ul>
+      <li><a href="#" class="active" data-tab="details">Event Details</a></li>
+      <li><a href="#" data-tab="sides">Side Dish Items</a></li>
+      <li><a href="#" data-tab="menu">Menu</a></li>
+      <li><a href="#" data-tab="admin">Data &amp; Export</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Body ──────────────────────────────────────────────── -->
+  <main class="admin-body">
+
+    <div id="setup-alert" class="hidden"></div>
+
+    <!-- Loading -->
+    <div id="loading-state" style="text-align:center;padding:3rem;color:var(--text-300);">
+      <div style="font-size:2rem;margin-bottom:0.5rem;">⏳</div><p>Loading setup…</p>
+    </div>
+
+    <!-- ═══ Event Details ═════════════════════════════════════ -->
+    <div id="tab-details" class="hidden">
+      <form id="form-details" onsubmit="saveDetails(event)">
+
+        <div class="setup-section">
+          <h3 class="setup-section-title">📅 Date, Time &amp; Guest of Honor</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ev-date">Party Date</label>
+              <input type="text" id="ev-date" placeholder="Saturday, July 12, 2025" />
+            </div>
+            <div class="form-group">
+              <label for="ev-subtitle">Hero Subtitle</label>
+              <input type="text" id="ev-subtitle" placeholder="The Big Five-Oh!" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ev-time">Start Time</label>
+              <input type="text" id="ev-time" placeholder="6:00 PM" />
+            </div>
+            <div class="form-group">
+              <label for="ev-endtime">End Time</label>
+              <input type="text" id="ev-endtime" placeholder="11:00 PM" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ev-rsvp-deadline">RSVP Deadline</label>
+            <input type="text" id="ev-rsvp-deadline" placeholder="July 5, 2025" />
+          </div>
+        </div>
+
+        <div class="setup-section">
+          <h3 class="setup-section-title">📍 Venue Details</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ev-venue-name">Venue Name</label>
+              <input type="text" id="ev-venue-name" placeholder="The Grand Hall" />
+            </div>
+            <div class="form-group">
+              <label for="ev-venue-address">Street Address</label>
+              <input type="text" id="ev-venue-address" placeholder="123 Celebration Drive" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ev-venue-city">City, State ZIP</label>
+              <input type="text" id="ev-venue-city" placeholder="Your City, State 00000" />
+            </div>
+            <div class="form-group">
+              <label for="ev-venue-notes">Parking / Notes</label>
+              <input type="text" id="ev-venue-notes" placeholder="Complimentary valet available" />
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-section">
+          <h3 class="setup-section-title">👔 Dress Code</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ev-dress-code">Dress Code</label>
+              <input type="text" id="ev-dress-code" placeholder="Festive Semi-Formal" />
+            </div>
+            <div class="form-group">
+              <label for="ev-dress-note">Dress Code Description</label>
+              <input type="text" id="ev-dress-note" placeholder="Vibrant colors, elegant florals…" />
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-section">
+          <h3 class="setup-section-title">💬 Welcome Message &amp; Contact</h3>
+          <div class="form-group">
+            <label for="ev-welcome">Welcome Message (hero section)</label>
+            <textarea id="ev-welcome" rows="3" placeholder="Join us for an elegant evening…"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="ev-surprise">Surprise Banner Message</label>
+            <input type="text" id="ev-surprise" placeholder="Please keep this a SURPRISE! Do not mention this event to Cameron." />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ev-contact-email">Host Contact Email</label>
+              <input type="email" id="ev-contact-email" placeholder="host@example.com" />
+            </div>
+            <div class="form-group">
+              <label for="ev-contact-phone">Host Contact Phone <span style="color:var(--text-300);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+              <input type="text" id="ev-contact-phone" placeholder="(555) 000-0000" />
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:right;margin-top:1rem;">
+          <button type="submit" class="btn btn-gold" id="save-details-btn">💾 Save Event Details</button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- ═══ Side Dish Items ═══════════════════════════════════ -->
+    <div id="tab-sides" class="hidden">
+      <div class="setup-section">
+        <h3 class="setup-section-title">🍽 Side Dish Items</h3>
+        <p style="font-size:0.88rem;color:var(--text-500);margin-bottom:1.5rem;">
+          Guests can optionally sign up to bring these items on the RSVP form.
+          Set the name, description, and how many you need. Use the seed button to pre-fill with defaults.
+        </p>
+
+        <div id="seed-prompt" class="alert alert-info" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+          <span>No side dish items yet. Would you like to start with the default 8 items?</span>
+          <button class="btn btn-primary btn-sm" onclick="seedItems()">Seed Default Items</button>
+        </div>
+
+        <!-- Add new item -->
+        <div style="background:var(--blue-50);border:1.5px solid var(--blue-200);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1.5rem;">
+          <p style="font-family:var(--font-display);font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue-700);margin-bottom:1rem;">Add New Item</p>
+          <div class="form-row form-row-3" style="align-items:end;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="new-item-name">Item Name</label>
+              <input type="text" id="new-item-name" placeholder="e.g., Guacamole" />
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="new-item-desc">Description / Notes</label>
+              <input type="text" id="new-item-desc" placeholder="e.g., Fresh, serves 10–12" />
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="new-item-needed">Qty Needed</label>
+              <input type="number" id="new-item-needed" min="1" max="99" value="2" style="max-width:80px;" />
+            </div>
+          </div>
+          <div style="margin-top:1rem;text-align:right;">
+            <button class="btn btn-primary btn-sm" onclick="addSideItem()">+ Add Item</button>
+          </div>
+        </div>
+
+        <div id="side-items-list"></div>
+      </div>
+    </div>
+
+    <!-- ═══ Menu Editor ═══════════════════════════════════════ -->
+    <div id="tab-menu" class="hidden">
+      <div class="setup-section">
+        <h3 class="setup-section-title">🍴 Menu Editor</h3>
+        <p style="font-size:0.88rem;color:var(--text-500);margin-bottom:1.5rem;">
+          Edit each menu section's title, subtitle, and items. One item per line.
+        </p>
+        <div id="menu-editor"></div>
+        <div style="text-align:right;margin-top:1rem;">
+          <button class="btn btn-gold" onclick="saveMenu()">💾 Save Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Data & Export ═════════════════════════════════════ -->
+    <div id="tab-admin" class="hidden">
+      <div class="setup-section">
+        <h3 class="setup-section-title">🗄 Data &amp; Export</h3>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+
+          <div style="flex:1;min-width:240px;background:var(--blue-50);border-radius:var(--radius-md);padding:1.25rem;">
+            <h4 style="font-size:0.85rem;color:var(--blue-800);margin-bottom:0.5rem;">Export RSVPs</h4>
+            <p style="font-size:0.82rem;color:var(--text-500);margin-bottom:1rem;">Download all RSVP data as a CSV spreadsheet.</p>
+            <button class="btn btn-outline btn-sm" id="export-csv-btn">⬇ Download CSV</button>
+          </div>
+
+          <div style="flex:1;min-width:240px;background:#fff5f5;border-radius:var(--radius-md);padding:1.25rem;border:1px solid #ffc0c0;">
+            <h4 style="font-size:0.85rem;color:var(--danger);margin-bottom:0.5rem;">Reset RSVP Data</h4>
+            <p style="font-size:0.82rem;color:var(--text-500);margin-bottom:1rem;">
+              Deletes all RSVPs from Firestore and resets side dish claim counts.
+              <strong>This cannot be undone.</strong>
+            </p>
+            <button class="btn btn-danger btn-sm" onclick="confirmReset()">🗑 Reset All RSVPs</button>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="setup-section" style="margin-top:1rem;">
+        <h3 class="setup-section-title">🔗 Firebase &amp; Hosting Info</h3>
+        <div class="alert alert-info" style="margin-top:0;">
+          <p style="margin-bottom:0.5rem;"><strong>Admin password</strong> is managed in Firebase Console under Authentication → Users. To change it, update the user record there.</p>
+          <p style="margin-bottom:0;"><strong>Firestore data</strong> can be viewed and edited directly in the Firebase Console → Firestore Database.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Delete Item Modal ──────────────────────────────────── -->
+  <div class="auth-overlay hidden" id="delete-item-modal" style="z-index:500;">
+    <div class="auth-card" style="max-width:360px;">
+      <div style="font-size:2rem;margin-bottom:0.75rem;">⚠️</div>
+      <h2>Remove Item?</h2>
+      <p id="delete-item-name" style="font-weight:700;color:var(--blue-800);margin:0.5rem 0 1rem;"></p>
+      <p>Existing RSVP side dish claims will be preserved but orphaned. RSVPs are not deleted.</p>
+      <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeDeleteItemModal()">Cancel</button>
+        <button class="btn btn-danger" style="flex:1;" id="confirm-delete-item-btn">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Reset Confirm Modal ────────────────────────────────── -->
+  <div class="auth-overlay hidden" id="reset-modal" style="z-index:500;">
+    <div class="auth-card" style="max-width:380px;">
+      <div style="font-size:2rem;margin-bottom:0.75rem;">⚠️</div>
+      <h2>Reset All RSVPs?</h2>
+      <p>This permanently deletes <strong>all RSVP documents</strong> and resets side dish claim counts. Cannot be undone.</p>
+      <p style="margin-top:1rem;">Type <strong>RESET</strong> to confirm:</p>
+      <div class="form-group" style="margin-top:0.5rem;">
+        <input type="text" id="reset-confirm-input" placeholder="Type RESET" style="text-align:center;" />
+      </div>
+      <div style="display:flex;gap:1rem;margin-top:1rem;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeResetModal()">Cancel</button>
+        <button class="btn btn-danger" style="flex:1;" id="confirm-reset-btn">Reset RSVPs</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Firebase SDK ──────────────────────────────────────── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+    APP.init();
+
+    let _menu      = [];
+    let _sideItems = [];
+    let _rsvps     = [];
+
+    /* ── Auth ───────────────────────────────────────── */
+    APP.onAuthStateChanged(async (user) => {
+      if (user) {
+        document.getElementById('auth-overlay').classList.add('hidden');
+        await loadAll();
+      } else {
+        document.getElementById('auth-overlay').classList.remove('hidden');
+        document.getElementById('loading-state').classList.add('hidden');
+      }
+    });
+
+    window.doLogin = async function () {
+      const btn = document.getElementById('login-btn');
+      const email    = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const errEl    = document.getElementById('auth-error');
+      errEl.classList.add('hidden');
+      btn.disabled = true; btn.textContent = 'Signing in…';
+      try {
+        await APP.signIn(email, password);
+      } catch (e) {
+        errEl.textContent = friendlyError(e.code);
+        errEl.classList.remove('hidden');
+        btn.disabled = false; btn.textContent = 'Sign In';
+      }
+    };
+
+    window.doLogout = async function () { await APP.signOut(); };
+
+    ['auth-email','auth-password'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    });
+
+    function friendlyError(code) {
+      return { 'auth/user-not-found': 'No account with that email.', 'auth/wrong-password': 'Incorrect password.',
+               'auth/invalid-email': 'Enter a valid email.' }[code] || 'Sign-in failed.';
+    }
+
+    /* ── Load All Data ───────────────────────────────── */
+    async function loadAll() {
+      document.getElementById('loading-state').classList.remove('hidden');
+      try {
+        const [ev, menu, sideItems, rsvps] = await Promise.all([
+          APP.getEventData(), APP.getMenu(), APP.getSideItems(), APP.getRSVPs()
+        ]);
+        _menu      = menu;
+        _sideItems = sideItems;
+        _rsvps     = rsvps;
+
+        populateDetailsForm(ev);
+        renderSideItems();
+        renderMenuEditor();
+        document.getElementById('export-csv-btn').onclick = () => APP.exportCSV(_rsvps, _sideItems);
+
+        // Show tabs, hide loader
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('tab-details').classList.remove('hidden');
+      } catch (e) {
+        showAlert('Error loading data: ' + e.message, 'danger');
+      }
+    }
+
+    /* ── Tabs ────────────────────────────────────────── */
+    const tabs = ['details', 'sides', 'menu', 'admin'];
+
+    function switchTab(name) {
+      tabs.forEach(t => document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name));
+      document.querySelectorAll('.admin-nav a').forEach(a => a.classList.toggle('active', a.dataset.tab === name));
+    }
+
+    document.querySelectorAll('.admin-nav a').forEach(a => {
+      a.addEventListener('click', e => { e.preventDefault(); switchTab(a.dataset.tab); });
+    });
+
+    /* ── Event Details ───────────────────────────────── */
+    function populateDetailsForm(ev) {
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+      set('ev-date',           ev.date);
+      set('ev-subtitle',       ev.heroSubtitle);
+      set('ev-time',           ev.time);
+      set('ev-endtime',        ev.endTime);
+      set('ev-rsvp-deadline',  ev.rsvpDeadline);
+      set('ev-venue-name',     ev.venueName);
+      set('ev-venue-address',  ev.venueAddress);
+      set('ev-venue-city',     ev.venueCity);
+      set('ev-venue-notes',    ev.venueNotes);
+      set('ev-dress-code',     ev.dressCode);
+      set('ev-dress-note',     ev.dressCodeNote);
+      set('ev-welcome',        ev.welcomeMessage);
+      set('ev-surprise',       ev.surpriseMessage);
+      set('ev-contact-email',  ev.contactEmail);
+      set('ev-contact-phone',  ev.contactPhone);
+    }
+
+    window.saveDetails = async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('save-details-btn');
+      btn.disabled = true; btn.textContent = 'Saving…';
+      try {
+        await APP.saveEventData({
+          date:            document.getElementById('ev-date').value,
+          heroSubtitle:    document.getElementById('ev-subtitle').value,
+          time:            document.getElementById('ev-time').value,
+          endTime:         document.getElementById('ev-endtime').value,
+          rsvpDeadline:    document.getElementById('ev-rsvp-deadline').value,
+          venueName:       document.getElementById('ev-venue-name').value,
+          venueAddress:    document.getElementById('ev-venue-address').value,
+          venueCity:       document.getElementById('ev-venue-city').value,
+          venueNotes:      document.getElementById('ev-venue-notes').value,
+          dressCode:       document.getElementById('ev-dress-code').value,
+          dressCodeNote:   document.getElementById('ev-dress-note').value,
+          welcomeMessage:  document.getElementById('ev-welcome').value,
+          surpriseMessage: document.getElementById('ev-surprise').value,
+          contactEmail:    document.getElementById('ev-contact-email').value,
+          contactPhone:    document.getElementById('ev-contact-phone').value
+        });
+        showAlert('Event details saved! ✓', 'success');
+      } catch(err) {
+        showAlert('Save failed: ' + err.message, 'danger');
+      }
+      btn.disabled = false; btn.textContent = '💾 Save Event Details';
+    };
+
+    /* ── Side Items ──────────────────────────────────── */
+    function renderSideItems() {
+      const seedPrompt = document.getElementById('seed-prompt');
+      seedPrompt.style.display = _sideItems.length === 0 ? 'flex' : 'none';
+
+      const container = document.getElementById('side-items-list');
+      container.innerHTML = '';
+
+      _sideItems.forEach(item => {
+        const claimed = item.claimedCount || 0;
+        const row = document.createElement('div');
+        row.id = `item-row-${item.id}`;
+        row.style.cssText = 'background:#fff;border:1px solid var(--warm-100);border-radius:var(--radius-md);padding:1rem 1.25rem;margin-bottom:0.75rem;';
+        row.innerHTML = `
+          <div style="display:grid;grid-template-columns:1fr 2fr 100px auto;gap:1rem;align-items:center;">
+            <div>
+              <div id="view-name-${item.id}" style="font-weight:700;font-size:0.9rem;color:var(--blue-800);">${esc(item.name)}</div>
+              <div id="edit-name-wrap-${item.id}" class="hidden">
+                <input type="text" id="edit-name-${item.id}" value="${esc(item.name)}"
+                  style="width:100%;padding:0.35rem 0.5rem;border:1.5px solid var(--blue-300);border-radius:var(--radius-sm);font-size:0.85rem;" />
+              </div>
+            </div>
+            <div>
+              <div id="view-desc-${item.id}" style="font-size:0.82rem;color:var(--text-500);">${esc(item.description || '')}</div>
+              <div id="edit-desc-wrap-${item.id}" class="hidden">
+                <input type="text" id="edit-desc-${item.id}" value="${esc(item.description || '')}"
+                  style="width:100%;padding:0.35rem 0.5rem;border:1.5px solid var(--blue-300);border-radius:var(--radius-sm);font-size:0.82rem;" />
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <div id="view-needed-${item.id}" style="font-size:0.85rem;">
+                <strong>${claimed}</strong>/${item.needed}
+                <span style="font-size:0.7rem;display:block;color:var(--text-300);">claimed/needed</span>
+              </div>
+              <div id="edit-needed-wrap-${item.id}" class="hidden">
+                <input type="number" id="edit-needed-${item.id}" value="${item.needed}" min="${Math.max(claimed,1)}" max="99"
+                  style="width:60px;padding:0.35rem 0.5rem;border:1.5px solid var(--blue-300);border-radius:var(--radius-sm);text-align:center;font-size:0.85rem;" />
+              </div>
+            </div>
+            <div style="display:flex;gap:0.5rem;">
+              <div id="view-actions-${item.id}">
+                <button class="btn btn-outline btn-sm" onclick="startEdit('${item.id}')">✏ Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="confirmDeleteItem('${item.id}','${esc(item.name)}')" style="margin-left:0.25rem;">✕</button>
+              </div>
+              <div id="edit-actions-${item.id}" class="hidden" style="display:flex;gap:0.5rem;">
+                <button class="btn btn-gold btn-sm" onclick="saveEdit('${item.id}')">Save</button>
+                <button class="btn btn-outline btn-sm" onclick="cancelEdit('${item.id}')">Cancel</button>
+              </div>
+            </div>
+          </div>`;
+        container.appendChild(row);
+      });
+    }
+
+    window.startEdit = function (id) {
+      ['name','desc','needed'].forEach(f => {
+        document.getElementById(`view-${f}-${id}`).classList.add('hidden');
+        document.getElementById(`edit-${f}-wrap-${id}`).classList.remove('hidden');
+      });
+      document.getElementById(`view-actions-${id}`).classList.add('hidden');
+      document.getElementById(`edit-actions-${id}`).classList.remove('hidden');
+    };
+    window.cancelEdit = function (id) {
+      ['name','desc','needed'].forEach(f => {
+        document.getElementById(`view-${f}-${id}`).classList.remove('hidden');
+        document.getElementById(`edit-${f}-wrap-${id}`).classList.add('hidden');
+      });
+      document.getElementById(`view-actions-${id}`).classList.remove('hidden');
+      document.getElementById(`edit-actions-${id}`).classList.add('hidden');
+    };
+    window.saveEdit = async function (id) {
+      const name   = document.getElementById(`edit-name-${id}`).value.trim();
+      const desc   = document.getElementById(`edit-desc-${id}`).value.trim();
+      const needed = document.getElementById(`edit-needed-${id}`).value;
+      if (!name) { alert('Item name cannot be empty.'); return; }
+      try {
+        await APP.updateSideItem(id, name, desc, needed);
+        _sideItems = await APP.getSideItems();
+        renderSideItems();
+        showAlert('Item updated. ✓', 'success');
+      } catch(e) { showAlert('Update failed: ' + e.message, 'danger'); }
+    };
+
+    window.addSideItem = async function () {
+      const name   = document.getElementById('new-item-name').value.trim();
+      const desc   = document.getElementById('new-item-desc').value.trim();
+      const needed = document.getElementById('new-item-needed').value;
+      if (!name) { alert('Please enter an item name.'); return; }
+      try {
+        await APP.addSideItem(name, desc, needed);
+        document.getElementById('new-item-name').value   = '';
+        document.getElementById('new-item-desc').value   = '';
+        document.getElementById('new-item-needed').value = '2';
+        _sideItems = await APP.getSideItems();
+        renderSideItems();
+        showAlert('Item added! ✓', 'success');
+      } catch(e) { showAlert('Add failed: ' + e.message, 'danger'); }
+    };
+
+    window.seedItems = async function () {
+      try {
+        await APP.seedDefaultSideItems();
+        _sideItems = await APP.getSideItems();
+        renderSideItems();
+        showAlert('Default items seeded! ✓', 'success');
+      } catch(e) { showAlert('Seed failed: ' + e.message, 'danger'); }
+    };
+
+    let _pendingDeleteItemId = null;
+    window.confirmDeleteItem = function (id, name) {
+      _pendingDeleteItemId = id;
+      document.getElementById('delete-item-name').textContent = name;
+      document.getElementById('delete-item-modal').classList.remove('hidden');
+    };
+    window.closeDeleteItemModal = function () {
+      _pendingDeleteItemId = null;
+      document.getElementById('delete-item-modal').classList.add('hidden');
+    };
+    document.getElementById('confirm-delete-item-btn').addEventListener('click', async () => {
+      if (!_pendingDeleteItemId) return;
+      try {
+        await APP.deleteSideItem(_pendingDeleteItemId);
+        _sideItems = await APP.getSideItems();
+        closeDeleteItemModal();
+        renderSideItems();
+        showAlert('Item removed. ✓', 'success');
+      } catch(e) { showAlert('Delete failed: ' + e.message, 'danger'); }
+    });
+
+    /* ── Menu Editor ─────────────────────────────────── */
+    function renderMenuEditor() {
+      const container = document.getElementById('menu-editor');
+      container.innerHTML = '';
+      (_menu || []).forEach((section, idx) => {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'background:var(--blue-50);border:1px solid var(--blue-200);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1rem;';
+        wrap.innerHTML = `
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:0.75rem;">
+              <label>Section Title</label>
+              <input type="text" id="menu-title-${idx}" value="${esc(section.title)}" style="background:#fff;" />
+            </div>
+            <div class="form-group" style="margin-bottom:0.75rem;">
+              <label>Subtitle</label>
+              <input type="text" id="menu-subtitle-${idx}" value="${esc(section.subtitle)}" style="background:#fff;" />
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Items (one per line)</label>
+            <textarea id="menu-items-${idx}" rows="4" style="background:#fff;">${esc((section.items||[]).join('\n'))}</textarea>
+          </div>`;
+        container.appendChild(wrap);
+      });
+    }
+
+    window.saveMenu = async function () {
+      const sections = (_menu || []).map((_, idx) => ({
+        title:    document.getElementById(`menu-title-${idx}`).value.trim(),
+        subtitle: document.getElementById(`menu-subtitle-${idx}`).value.trim(),
+        items:    document.getElementById(`menu-items-${idx}`).value.split('\n').map(l => l.trim()).filter(Boolean)
+      }));
+      try {
+        await APP.saveMenu(sections);
+        _menu = sections;
+        showAlert('Menu saved! ✓', 'success');
+      } catch(e) { showAlert('Save failed: ' + e.message, 'danger'); }
+    };
+
+    /* ── Reset ───────────────────────────────────────── */
+    window.confirmReset = function () {
+      document.getElementById('reset-confirm-input').value = '';
+      document.getElementById('reset-modal').classList.remove('hidden');
+    };
+    window.closeResetModal = function () {
+      document.getElementById('reset-modal').classList.add('hidden');
+    };
+
+    document.getElementById('confirm-reset-btn').addEventListener('click', async () => {
+      if (document.getElementById('reset-confirm-input').value !== 'RESET') {
+        showAlert('Type RESET to confirm.', 'danger'); return;
+      }
+      try {
+        // Delete all RSVPs and reset claimedCount on all side items in parallel
+        const rsvps = await APP.getRSVPs();
+        const db    = firebase.firestore();
+        const batch = db.batch();
+        rsvps.forEach(r  => batch.delete(db.collection('rsvps').doc(r.id)));
+        _sideItems.forEach(i => batch.update(db.collection('sideItems').doc(i.id), { claimedCount: 0, signups: [] }));
+        await batch.commit();
+        _rsvps = [];
+        _sideItems = await APP.getSideItems();
+        closeResetModal();
+        showAlert('All RSVPs have been reset. ✓', 'success');
+      } catch(e) { showAlert('Reset failed: ' + e.message, 'danger'); }
+    });
+
+    /* ── Helpers ─────────────────────────────────────── */
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+    function showAlert(msg, type = 'info') {
+      const el = document.getElementById('setup-alert');
+      el.className = `alert alert-${type}`;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+  })();
+  </script>
+
+</body>
+</html>
