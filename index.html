@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cameron's 50th Surprise Fiesta</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=2" />
 </head>
 <body>
 
@@ -247,11 +247,11 @@
 
               <!-- Side Item Selector -->
               <div id="side-item-selector" class="side-item-selector hidden">
-                <label for="sideItemSelect">Choose Your Item <span style="color:var(--danger)">*</span></label>
-                <select id="sideItemSelect">
-                  <option value="">— Select an available item —</option>
-                </select>
-                <p class="helper-text">Remaining spots shown. Claim yours before they're gone!</p>
+                <p class="pick-header">Choose an item to bring <span style="color:var(--danger)">*</span></p>
+                <p class="helper-text" style="margin-bottom:var(--space-md);">Spots remaining shown — first come, first served!</p>
+                <div class="side-item-pick-grid" id="side-item-pick-grid">
+                  <!-- Cards injected by JS -->
+                </div>
               </div>
             </div>
           </div>
@@ -373,21 +373,30 @@
     let _availableItems = [];
 
     function populateSideItems(items) {
-      const select = document.getElementById('sideItemSelect');
-      const sideLabel = document.querySelector('[for="sideItemSelect"]')?.closest('.side-item-selector');
-      select.innerHTML = '<option value="">— Select an available item —</option>';
+      const grid       = document.getElementById('side-item-pick-grid');
+      const sideRadio  = document.getElementById('contrib-side');
+      const sideLabel  = document.querySelector('label:has(#contrib-side)');
+      grid.innerHTML   = '';
 
       if (items.length === 0) {
-        select.innerHTML = '<option value="" disabled>All items have been claimed — thank you!</option>';
-        document.getElementById('contrib-side').disabled = true;
-        const label = document.querySelector('label:has(#contrib-side)');
-        if (label) label.style.opacity = '0.5';
+        grid.innerHTML = '<p style="font-size:0.85rem;color:var(--text-300);font-style:italic;">All items have been claimed — thank you!</p>';
+        sideRadio.disabled = true;
+        if (sideLabel) sideLabel.style.opacity = '0.5';
       } else {
+        sideRadio.disabled = false;
+        if (sideLabel) sideLabel.style.opacity = '';
         items.forEach(item => {
-          const opt = document.createElement('option');
-          opt.value = item.id;
-          opt.textContent = `${item.name}  (${item.remaining} of ${item.needed} spots left)`;
-          select.appendChild(opt);
+          const spotsLabel = item.remaining === 1 ? '1 spot remaining' : `${item.remaining} of ${item.needed} spots remaining`;
+          const card = document.createElement('label');
+          card.className = 'side-item-pick-card';
+          card.innerHTML = `
+            <input type="radio" name="sideItemPick" value="${item.id}" />
+            <span class="pick-card-body">
+              <span class="pick-card-name">${item.name}</span>
+              <span class="pick-card-desc">${item.description || ''}</span>
+              <span class="pick-card-spots">🍽 ${spotsLabel}</span>
+            </span>`;
+          grid.appendChild(card);
         });
       }
     }
@@ -437,7 +446,7 @@
       if (!attending) { showError('Please let us know if you\'ll be attending.'); return; }
 
       const contribution = document.querySelector('input[name="contribution"]:checked')?.value || 'none';
-      const sideItemId   = document.getElementById('sideItemSelect').value;
+      const sideItemId   = document.querySelector('input[name="sideItemPick"]:checked')?.value || '';
       if (contribution === 'side_item' && !sideItemId) {
         showError('Please select a side dish item, or choose a different option.'); return;
       }
