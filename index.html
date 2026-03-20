@@ -530,8 +530,12 @@
         });
         showSuccess(attending, contribution, sideItemId, sideQty);
       } catch (err) {
-        showError(err.message || 'Something went wrong. Please try again.');
-        submitBtn.disabled   = false;
+        // Translate Firebase permission errors into something human-readable
+        const msg = (err.code === 'permission-denied' || (err.message || '').toLowerCase().includes('permission'))
+          ? 'We had a hiccup saving your RSVP — please try again in a moment. If it keeps happening, text Mistie at 727-744-3121!'
+          : (err.message || 'Something went wrong. Please try again.');
+        showError(msg);
+        submitBtn.disabled    = false;
         submitBtn.textContent = 'Submit My RSVP 🎉';
       }
     });

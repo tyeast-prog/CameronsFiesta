@@ -60,16 +60,16 @@ const DEFAULTS = {
     }
   ],
   sideItems: [
-    { name: 'Artisanal Guacamole',        description: 'Fresh homemade, serves 10–12',                   needed: 3, unit: 'batches'  },
-    { name: 'Elote en Vaso (Street Corn)', description: 'Mexican street corn cups, 12 servings each',    needed: 3, unit: 'batches'  },
-    { name: 'Queso Fundido',              description: 'With tortilla chips, serves 8–10',               needed: 2, unit: 'dishes'   },
-    { name: 'Arroz Rojo (Spanish Rice)',  description: 'Large serving dish, 12+ servings',               needed: 3, unit: 'dishes'   },
-    { name: 'Frijoles de Olla',           description: 'Slow-cooked pinto beans, large pot',             needed: 2, unit: 'pots'     },
-    { name: 'Pico de Gallo & Salsas',     description: 'Assorted fresh salsas, serves 20+',              needed: 4, unit: 'batches'  },
-    { name: 'Tres Leches Cake',           description: 'Serves 12–15 slices',                            needed: 2, unit: 'cakes'    },
-    { name: 'Churros & Chocolate Sauce',  description: '4 dozen pieces with dipping sauce',              needed: 2, unit: 'batches'  },
-    { name: 'Aguas Frescas',             description: 'Horchata, jamaica, or your favorite — serves 12+', needed: 3, unit: 'batches' },
-    { name: 'Sodas & Bottled Water',     description: 'Assorted sodas, sparkling water, or juice',        needed: 3, unit: 'packs'   }
+    { name: 'Artisanal Guacamole',        description: 'Serves 10–12 · Store-bought, new & sealed',                    needed: 3, unit: 'batches'  },
+    { name: 'Elote en Vaso (Street Corn)', description: 'Mexican street corn cups, 12 servings · Store-bought, new & sealed', needed: 3, unit: 'batches'  },
+    { name: 'Queso Fundido',              description: 'With tortilla chips, serves 8–10 · Store-bought, new & sealed', needed: 2, unit: 'dishes'   },
+    { name: 'Arroz Rojo (Spanish Rice)',  description: 'Large serving dish, 12+ servings · Store-bought, new & sealed', needed: 3, unit: 'dishes'   },
+    { name: 'Frijoles de Olla',           description: 'Large pot, 12+ servings · Store-bought, new & sealed',          needed: 2, unit: 'pots'     },
+    { name: 'Pico de Gallo & Salsas',     description: 'Assorted fresh salsas, serves 20+ · Store-bought, new & sealed', needed: 4, unit: 'batches'  },
+    { name: 'Tres Leches Cake',           description: 'Serves 12–15 slices · Store-bought, new & sealed',              needed: 2, unit: 'cakes'    },
+    { name: 'Churros & Chocolate Sauce',  description: '4 dozen pieces with dipping sauce · Store-bought, new & sealed', needed: 2, unit: 'batches'  },
+    { name: 'Aguas Frescas',             description: 'Horchata, jamaica, or your fave, serves 12+ · Store-bought, new & sealed', needed: 3, unit: 'batches' },
+    { name: 'Sodas & Bottled Water',     description: 'Assorted sodas, sparkling water, or juice · Store-bought, new & sealed',   needed: 3, unit: 'packs'   }
   ]
 };
 
