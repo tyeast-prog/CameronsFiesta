@@ -27,21 +27,20 @@ const DEFAULTS = {
   },
   menu: [
     {
-      title: 'Antojitos', subtitle: 'To Start',
+      title: 'Antojitos', subtitle: 'Small Bites to Spark the Fiesta',
       items: [
-        'Artisanal Guacamole with Handmade Tortilla Chips',
-        'Elote en Vaso — Roasted Mexican Street Corn Cups',
-        'Queso Fundido with Chorizo'
+        'Salsas de la Casa — Fresh, Smoky & Spicy',
+        'Totopos Dorados — Crispy, Golden & Irresistible'
       ]
     },
     {
-      title: 'Plato Fuerte', subtitle: 'Main Course',
+      title: 'Plato Fuerte', subtitle: 'Build Your Perfect Fiesta Bowl',
       items: [
-        'Carne Asada — Grilled Marinated Prime Beef',
-        'Al Pastor — Slow-Roasted Marinated Pork',
-        'Pollo en Mole — Chicken in Traditional Mole Sauce',
-        'Warm Artisan Flour & Corn Tortillas',
-        'Arroz Rojo · Frijoles de Olla · Assorted Salsas'
+        'Arroz Blanco — Fragrant Herb-Kissed Jasmine Rice',
+        'Frijoles Negros — Slow-Simmered with Cumin & Garlic',
+        'Pollo Desmenuzado — Tender Seasoned Shredded Chicken',
+        'Jackfruit al Pastor — Slow-Braised with Bold Mexican Spices',
+        'La Mesa de Toppings — Queso · Guacamole · Crisp Lettuce'
       ]
     },
     {
