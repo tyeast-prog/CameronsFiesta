@@ -142,7 +142,7 @@
             <label>Will you be joining us? <span style="color:var(--danger)">*</span></label>
             <div class="radio-group">
               <label class="radio-option">
-                <input type="radio" name="attending" value="yes" required />
+                <input type="radio" name="attending" value="yes" required checked />
                 <span>¡Sí! Wouldn't miss it! 🎉</span>
               </label>
               <label class="radio-option">
@@ -157,7 +157,7 @@
           </div>
 
           <!-- Guest Details -->
-          <div id="guest-section" class="hidden">
+          <div id="guest-section">
             <hr class="form-divider" />
             <p class="form-section-title">Your Party</p>
 
@@ -530,7 +530,9 @@
         });
         showSuccess(attending, contribution, sideItemId, sideQty);
       } catch (err) {
-        // Translate Firebase permission errors into something human-readable
+        console.error('RSVP submit error:', err.code, err.message, err);
+        // Firebase transport errors on mobile often surface as permission-denied;
+        // show a friendly retry message instead of the raw Firebase string
         const msg = (err.code === 'permission-denied' || (err.message || '').toLowerCase().includes('permission'))
           ? 'We had a hiccup saving your RSVP — please try again in a moment. If it keeps happening, text Mistie at 727-744-3121!'
           : (err.message || 'Something went wrong. Please try again.');

@@ -86,6 +86,10 @@ const APP = {
     if (_initialized) return;
     firebase.initializeApp(FIREBASE_CONFIG);
     _db   = firebase.firestore();
+    // experimentalAutoDetectLongPolling improves reliability on mobile/cellular
+    // networks where Firebase's default gRPC-web transport can silently fail
+    // and misreport transport errors as "permission-denied"
+    _db.settings({ experimentalAutoDetectLongPolling: true, merge: true });
     _auth = firebase.auth();
     _initialized = true;
   },
