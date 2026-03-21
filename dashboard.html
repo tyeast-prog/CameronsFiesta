@@ -144,6 +144,99 @@
 
   </main>
 
+  <!-- ── Edit RSVP Modal ──────────────────────────────────── -->
+  <div class="auth-overlay hidden" id="edit-modal" style="z-index:500;align-items:flex-start;padding:2rem 1rem;overflow-y:auto;">
+    <div class="auth-card" style="max-width:620px;width:100%;text-align:left;padding:2rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+        <h2 style="margin:0;">✏️ Edit RSVP</h2>
+        <button onclick="closeEditModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-300);">✕</button>
+      </div>
+
+      <!-- Name -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+        <div class="form-group" style="margin:0;">
+          <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.25rem;">First Name</label>
+          <input type="text" id="edit-firstName" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.25rem;">Last Name</label>
+          <input type="text" id="edit-lastName" style="width:100%;" />
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+        <div class="form-group" style="margin:0;">
+          <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.25rem;">Email</label>
+          <input type="email" id="edit-email" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.25rem;">Phone</label>
+          <input type="tel" id="edit-phone" style="width:100%;" />
+        </div>
+      </div>
+
+      <!-- Attending -->
+      <div class="form-group" style="margin-bottom:0.75rem;">
+        <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.25rem;">Attending</label>
+        <select id="edit-attending" style="width:100%;" onchange="editAttendingChanged()">
+          <option value="yes">Yes</option>
+          <option value="maybe">Maybe</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <!-- Guest counts (hidden when No) -->
+      <div id="edit-guest-section" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+        <div class="form-group" style="margin:0;">
+          <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.25rem;">Adults</label>
+          <input type="number" id="edit-adults" min="1" max="30" style="width:100%;" oninput="editRebuildPartyMembers()" />
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.25rem;">Children</label>
+          <input type="number" id="edit-children" min="0" max="30" style="width:100%;" oninput="editRebuildPartyMembers()" />
+        </div>
+      </div>
+
+      <!-- Party Members -->
+      <div id="edit-party-members-section" style="margin-bottom:0.75rem;">
+        <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.4rem;">Party Members &amp; Dietary Needs</label>
+        <div id="edit-pm-grid"></div>
+      </div>
+
+      <!-- Contribution -->
+      <div class="form-group" style="margin-bottom:0.75rem;">
+        <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.25rem;">Contribution</label>
+        <select id="edit-contribution" style="width:100%;" onchange="editContribChanged()">
+          <option value="none">None</option>
+          <option value="donation">Main Course Contribution</option>
+          <option value="side_item">Side Dish</option>
+        </select>
+      </div>
+
+      <!-- Side Items (shown when side_item) -->
+      <div id="edit-side-section" class="hidden" style="margin-bottom:0.75rem;">
+        <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.4rem;">Items to Bring</label>
+        <div id="edit-si-grid" style="border:1.5px solid var(--blue-200);border-radius:var(--radius-md);overflow:hidden;"></div>
+      </div>
+
+      <!-- Note -->
+      <div class="form-group" style="margin-bottom:1.25rem;">
+        <label style="font-size:0.8rem;font-weight:600;color:var(--text-500);display:block;margin-bottom:0.25rem;">Note</label>
+        <textarea id="edit-note" rows="2" style="width:100%;resize:vertical;"></textarea>
+      </div>
+
+      <!-- Error -->
+      <p id="edit-error" class="hidden" style="color:var(--danger,#e53e3e);font-size:0.85rem;margin-bottom:1rem;padding:0.5rem 0.75rem;background:#fff5f5;border-radius:6px;border:1px solid #feb2b2;"></p>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:0.75rem;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeEditModal()">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" id="save-edit-btn" onclick="saveEdit()">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Delete Confirm Modal ──────────────────────────────── -->
   <div class="auth-overlay hidden" id="delete-modal" style="z-index:500;">
     <div class="auth-card" style="max-width:360px;">
@@ -402,7 +495,10 @@
           <td style="font-size:0.82rem;">${contribText}</td>
           <td style="font-size:0.78rem;max-width:160px;white-space:normal;">${renderPartyMembers(r)}</td>
           <td style="font-size:0.75rem;white-space:nowrap;color:var(--text-500);">${dateStr}</td>
-          <td><button class="btn btn-sm btn-danger" onclick="confirmDelete('${r.id}','${esc(r.firstName)} ${esc(r.lastName)}')">✕</button></td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-sm btn-outline" title="Edit" style="margin-right:0.3rem;" onclick="openEditModal('${r.id}')">✏️</button>
+            <button class="btn btn-sm btn-danger" title="Delete" onclick="confirmDelete('${r.id}','${esc(r.firstName)} ${esc(r.lastName)}')">✕</button>
+          </td>
         </tr>`;
       }).join('');
     }
@@ -452,6 +548,207 @@
       // Legacy format: single dietaryRestrictions string
       return escHtml(r.dietaryRestrictions) || '—';
     }
+
+    /* ── Edit Modal ──────────────────────────────────── */
+    let _editingId  = null;
+    let _editingRSVP = null;
+
+    window.openEditModal = function (id) {
+      const r = _rsvps.find(x => x.id === id);
+      if (!r) return;
+      _editingId   = id;
+      _editingRSVP = r;
+
+      // Populate basic fields
+      document.getElementById('edit-firstName').value  = r.firstName  || '';
+      document.getElementById('edit-lastName').value   = r.lastName   || '';
+      document.getElementById('edit-email').value      = r.email      || '';
+      document.getElementById('edit-phone').value      = r.phone      || '';
+      document.getElementById('edit-attending').value  = r.attending  || 'yes';
+      document.getElementById('edit-adults').value     = r.adults     != null ? r.adults   : 1;
+      document.getElementById('edit-children').value   = r.children   != null ? r.children : 0;
+      document.getElementById('edit-note').value       = r.note       || '';
+      document.getElementById('edit-contribution').value = r.contributionType || 'none';
+      document.getElementById('edit-error').classList.add('hidden');
+      document.getElementById('save-edit-btn').textContent = '💾 Save Changes';
+      document.getElementById('save-edit-btn').disabled = false;
+
+      // Guest / party member section visibility
+      editAttendingChanged();
+
+      // Build party member rows pre-filled from saved data
+      editRebuildPartyMembers(r.partyMembers || []);
+
+      // Build side item checkboxes
+      editBuildSideItems(r);
+      editContribChanged();
+
+      document.getElementById('edit-modal').classList.remove('hidden');
+      document.getElementById('edit-modal').scrollTop = 0;
+    };
+
+    window.closeEditModal = function () {
+      _editingId   = null;
+      _editingRSVP = null;
+      document.getElementById('edit-modal').classList.add('hidden');
+    };
+
+    window.editAttendingChanged = function () {
+      const att = document.getElementById('edit-attending').value;
+      document.getElementById('edit-guest-section').style.display         = att === 'no' ? 'none' : '';
+      document.getElementById('edit-party-members-section').style.display = att === 'no' ? 'none' : '';
+    };
+
+    window.editContribChanged = function () {
+      const val = document.getElementById('edit-contribution').value;
+      document.getElementById('edit-side-section').classList.toggle('hidden', val !== 'side_item');
+    };
+
+    /* Rebuild party member name/dietary rows */
+    window.editRebuildPartyMembers = function (prefill) {
+      const adults   = Math.max(1, parseInt(document.getElementById('edit-adults').value)   || 1);
+      const children = Math.max(0, parseInt(document.getElementById('edit-children').value) || 0);
+      const total    = adults + children;
+      const grid     = document.getElementById('edit-pm-grid');
+
+      // Collect any values already typed (so we don't wipe them on a re-render)
+      const existing = [];
+      grid.querySelectorAll('.edit-pm-row').forEach(row => {
+        existing.push({
+          name:     row.querySelector('.edit-pm-name').value,
+          dietary:  row.querySelector('.edit-pm-dietary').value
+        });
+      });
+
+      const src = (Array.isArray(prefill) && prefill.length) ? prefill : existing;
+
+      grid.innerHTML = '';
+      for (let i = 0; i < total; i++) {
+        const label   = i < adults ? `Adult ${i + 1}` : `Child ${i - adults + 1}`;
+        const saved   = src[i] || {};
+        const row     = document.createElement('div');
+        row.className = 'edit-pm-row';
+        row.style.cssText = 'display:grid;grid-template-columns:80px 1fr 1fr;gap:0.5rem;align-items:center;padding:0.3rem 0;border-bottom:1px solid var(--blue-100);';
+        row.innerHTML = `
+          <span style="font-size:0.78rem;color:var(--text-500);font-weight:600;">${label}</span>
+          <input type="text" class="edit-pm-name"    placeholder="Name"              value="${escHtml(saved.name    || '')}" style="font-size:0.82rem;" />
+          <input type="text" class="edit-pm-dietary" placeholder="Dietary / Allergy" value="${escHtml(saved.dietary || '')}" style="font-size:0.82rem;" />`;
+        grid.appendChild(row);
+      }
+    };
+
+    /* Build side-item checkboxes with qty controls */
+    function editBuildSideItems(r) {
+      const grid = document.getElementById('edit-si-grid');
+      grid.innerHTML = '';
+
+      // Normalise current selection
+      const currentMap = {};
+      if (Array.isArray(r.sideItems) && r.sideItems.length > 0) {
+        r.sideItems.forEach(s => { currentMap[s.id] = s.quantity || 1; });
+      } else if (r.sideItemId) {
+        currentMap[r.sideItemId] = r.sideItemQuantity || 1;
+      }
+
+      _sideItems.forEach((item, idx) => {
+        const checked  = currentMap.hasOwnProperty(item.id);
+        const qty      = currentMap[item.id] || 1;
+        const claimed  = item.claimedCount || 0;
+        const oldQty   = currentMap[item.id] || 0;
+        const avail    = item.needed - claimed + oldQty;  // how many host could set (old freed up)
+        const maxQty   = Math.max(1, avail);
+
+        const row      = document.createElement('div');
+        row.style.cssText = `display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0.75rem;${idx < _sideItems.length-1 ? 'border-bottom:1px solid var(--blue-100);' : ''}`;
+
+        const cbId = `edit-si-cb-${item.id}`;
+        row.innerHTML = `
+          <input type="checkbox" id="${cbId}" data-si-id="${item.id}" ${checked ? 'checked' : ''}
+            style="width:16px;height:16px;cursor:pointer;flex-shrink:0;" />
+          <label for="${cbId}" style="flex:1;cursor:pointer;font-size:0.85rem;">
+            ${escHtml(item.name)}
+            <span style="color:var(--text-300);font-size:0.75rem;"> — ${claimed} of ${item.needed} claimed</span>
+          </label>
+          <div class="edit-si-qty-wrap" data-si-id="${item.id}" style="display:${checked ? 'flex' : 'none'};align-items:center;gap:0.3rem;">
+            <button type="button" style="width:26px;height:26px;border:1.5px solid var(--blue-300);border-radius:4px;background:white;font-size:0.9rem;cursor:pointer;line-height:1;"
+              onclick="editAdjQty('${item.id}',-1)">−</button>
+            <input type="number" min="1" max="${maxQty}" value="${qty}"
+              id="edit-si-qty-${item.id}" data-si-id="${item.id}"
+              style="width:46px;text-align:center;border:1.5px solid var(--blue-200);border-radius:4px;padding:0.2rem;font-size:0.85rem;" />
+            <button type="button" style="width:26px;height:26px;border:1.5px solid var(--blue-300);border-radius:4px;background:white;font-size:0.9rem;cursor:pointer;line-height:1;"
+              onclick="editAdjQty('${item.id}',1)">+</button>
+          </div>`;
+
+        // Toggle qty controls when checkbox changes
+        row.querySelector(`#${cbId}`).addEventListener('change', function () {
+          row.querySelector('.edit-si-qty-wrap').style.display = this.checked ? 'flex' : 'none';
+        });
+
+        grid.appendChild(row);
+      });
+    }
+
+    window.editAdjQty = function (siId, delta) {
+      const inp = document.getElementById(`edit-si-qty-${siId}`);
+      if (!inp) return;
+      inp.value = Math.max(1, Math.min(parseInt(inp.max) || 99, (parseInt(inp.value) || 1) + delta));
+    };
+
+    function collectEditPartyMembers() {
+      const rows = [];
+      document.querySelectorAll('#edit-pm-grid .edit-pm-row').forEach(row => {
+        rows.push({
+          name:    row.querySelector('.edit-pm-name').value.trim(),
+          dietary: row.querySelector('.edit-pm-dietary').value.trim()
+        });
+      });
+      return rows;
+    }
+
+    function collectEditSideItems() {
+      const items = [];
+      document.querySelectorAll('#edit-si-grid input[type="checkbox"]:checked').forEach(cb => {
+        const id  = cb.dataset.siId;
+        const qty = parseInt(document.getElementById(`edit-si-qty-${id}`)?.value) || 1;
+        items.push({ id, quantity: qty });
+      });
+      return items;
+    }
+
+    window.saveEdit = async function () {
+      if (!_editingId || !_editingRSVP) return;
+      const btn = document.getElementById('save-edit-btn');
+      const err = document.getElementById('edit-error');
+      err.classList.add('hidden');
+      btn.disabled    = true;
+      btn.textContent = 'Saving…';
+
+      try {
+        const formData = {
+          firstName:       document.getElementById('edit-firstName').value,
+          lastName:        document.getElementById('edit-lastName').value,
+          email:           document.getElementById('edit-email').value,
+          phone:           document.getElementById('edit-phone').value,
+          attending:       document.getElementById('edit-attending').value,
+          adults:          document.getElementById('edit-adults').value,
+          children:        document.getElementById('edit-children').value,
+          partyMembers:    collectEditPartyMembers(),
+          contributionType:document.getElementById('edit-contribution').value,
+          sideItems:       collectEditSideItems(),
+          note:            document.getElementById('edit-note').value
+        };
+
+        await APP.updateRSVP(_editingId, _editingRSVP, formData);
+        _sideItems = await APP.getSideItems();   // refresh side item counts
+        closeEditModal();
+        showAlert('RSVP updated successfully!', 'success');
+      } catch (e) {
+        err.textContent = e.message || 'Save failed. Please try again.';
+        err.classList.remove('hidden');
+        btn.disabled    = false;
+        btn.textContent = '💾 Save Changes';
+      }
+    };
 
     function showAlert(msg, type = 'info') {
       const el = document.getElementById('dashboard-alert');
