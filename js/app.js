@@ -224,8 +224,12 @@ const APP = {
         if (qty > remaining) {
           throw new Error(`Sorry — only ${remaining} still needed. Please adjust your quantity and try again.`);
         }
+        // Use absolute value (item.claimedCount + qty) rather than
+        // FieldValue.increment(qty) — Firebase security rules have a bug
+        // where increment(n > 1) causes diff().affectedKeys() to include
+        // phantom keys, failing the hasOnly() rule check.
         tx.update(itemRef, {
-          claimedCount: firebase.firestore.FieldValue.increment(qty),
+          claimedCount: item.claimedCount + qty,
           signups:      firebase.firestore.FieldValue.arrayUnion({
             rsvpId:   rsvpRef.id,
             name:     `${rsvp.firstName} ${rsvp.lastName}`.trim(),

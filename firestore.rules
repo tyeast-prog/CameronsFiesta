@@ -18,12 +18,23 @@ service cloud.firestore {
       allow create, delete: if request.auth != null;
       allow update: if request.auth != null
         || (
-          // Guest claiming a slot: only claimedCount & signups change
-          request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['claimedCount', 'signups'])
-          // claimedCount must increase by at least 1 and not exceed needed
-          && request.resource.data.claimedCount > resource.data.claimedCount
+          // Guest claiming a slot — avoid diff().affectedKeys() which has a
+          // Firebase bug with FieldValue.increment(n>1): phantom keys appear
+          // and cause hasOnly() to return false. Instead, explicitly verify:
+
+          // 1. claimedCount must increase and not exceed needed
+          request.resource.data.claimedCount > resource.data.claimedCount
           && request.resource.data.claimedCount <= resource.data.needed
+
+          // 2. Protected fields are unchanged
+          && request.resource.data.name        == resource.data.name
+          && request.resource.data.description == resource.data.description
+          && request.resource.data.needed      == resource.data.needed
+          && request.resource.data.unit        == resource.data.unit
+          && request.resource.data.order       == resource.data.order
+
+          // 3. signups can only grow, never shrink
+          && request.resource.data.signups.size() >= resource.data.signups.size()
         );
     }
 
