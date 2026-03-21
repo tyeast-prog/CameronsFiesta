@@ -784,6 +784,34 @@ h1, h2, h3, h4 {
   margin-top: var(--space-xs);
 }
 
+/* Party member rows */
+.party-member-row {
+  background: var(--blue-50);
+  border: 1.5px solid var(--blue-100);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+.party-member-row:last-child { margin-bottom: 0; }
+.party-member-row .form-group { margin-bottom: 0; }
+.member-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--blue-500);
+  margin-bottom: var(--space-sm);
+}
+.member-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+@media (max-width: 640px) {
+  .member-fields { grid-template-columns: 1fr; gap: var(--space-sm); }
+}
+
 /* Quantity picker */
 .side-qty-picker {
   margin-top: var(--space-md);

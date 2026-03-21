@@ -394,7 +394,7 @@
           <td style="text-align:center;">${r.attending !== 'no' ? r.adults   : '—'}</td>
           <td style="text-align:center;">${r.attending !== 'no' ? r.children : '—'}</td>
           <td style="font-size:0.82rem;">${contribText}</td>
-          <td style="font-size:0.78rem;max-width:120px;white-space:normal;">${r.dietaryRestrictions || '—'}</td>
+          <td style="font-size:0.78rem;max-width:160px;white-space:normal;">${renderPartyMembers(r)}</td>
           <td style="font-size:0.75rem;white-space:nowrap;color:var(--text-500);">${dateStr}</td>
           <td><button class="btn btn-sm btn-danger" onclick="confirmDelete('${r.id}','${esc(r.firstName)} ${esc(r.lastName)}')">✕</button></td>
         </tr>`;
@@ -430,6 +430,22 @@
 
     /* ── Helpers ─────────────────────────────────────── */
     function esc(s) { return String(s||'').replace(/'/g,"&#39;"); }
+
+    function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function renderPartyMembers(r) {
+      // New format: partyMembers array
+      if (r.partyMembers && r.partyMembers.length) {
+        return r.partyMembers.map(m => {
+          const name = escHtml(m.name || '');
+          const diet = escHtml(m.dietary || '');
+          if (diet) return `<span style="display:block"><strong>${name}</strong>: ${diet}</span>`;
+          return `<span style="display:block;color:var(--text-400)">${name || '—'}</span>`;
+        }).join('');
+      }
+      // Legacy format: single dietaryRestrictions string
+      return escHtml(r.dietaryRestrictions) || '—';
+    }
 
     function showAlert(msg, type = 'info') {
       const el = document.getElementById('dashboard-alert');

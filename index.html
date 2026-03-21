@@ -176,9 +176,10 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="dietary">Dietary Restrictions or Allergies <span style="color:var(--text-300);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-              <textarea id="dietary" rows="2" placeholder="e.g., vegetarian, nut allergy, gluten-free…"></textarea>
+            <div id="party-members-section">
+              <p class="form-section-title" style="margin-top:0;margin-bottom:var(--space-xs);">Who's Coming?</p>
+              <p style="font-size:0.85rem;color:var(--text-500);margin-bottom:var(--space-lg);">List everyone in your party and note any allergies or dietary needs.</p>
+              <div id="party-members-grid"></div>
             </div>
 
             <hr class="form-divider" />
@@ -448,9 +449,103 @@
 
     function updateTotal() {
       totalDisplay.textContent = (parseInt(adultsInput.value) || 0) + (parseInt(childrenInput.value) || 0);
+      updatePartyMembers();
     }
     adultsInput.addEventListener('input',   updateTotal);
     childrenInput.addEventListener('input', updateTotal);
+
+    /* ── Party Members ───────────────────────────────── */
+    document.getElementById('firstName').addEventListener('input', syncAdult1Name);
+    document.getElementById('lastName').addEventListener('input',  syncAdult1Name);
+
+    function syncAdult1Name() {
+      const row = document.querySelector('#party-members-grid [data-key="adult-0"]');
+      if (!row) return;
+      const inp = row.querySelector('.member-name');
+      if (!inp._edited) inp.value = getSubmitterName();
+    }
+
+    function getSubmitterName() {
+      return [
+        document.getElementById('firstName').value.trim(),
+        document.getElementById('lastName').value.trim()
+      ].filter(Boolean).join(' ');
+    }
+
+    function updatePartyMembers() {
+      const adults   = Math.max(0, parseInt(adultsInput.value)   || 0);
+      const children = Math.max(0, parseInt(childrenInput.value) || 0);
+      const grid     = document.getElementById('party-members-grid');
+
+      // Preserve current values and edited state before re-render
+      const saved = {};
+      grid.querySelectorAll('[data-key]').forEach(row => {
+        const nameInp = row.querySelector('.member-name');
+        saved[row.dataset.key] = {
+          name:    nameInp.value,
+          dietary: row.querySelector('.member-dietary').value,
+          edited:  nameInp._edited || false
+        };
+      });
+
+      grid.innerHTML = '';
+
+      for (let i = 0; i < adults; i++) {
+        const key  = `adult-${i}`;
+        const prev = saved[key];
+        const name = prev ? prev.name : (i === 0 ? getSubmitterName() : '');
+        const row  = buildMemberRow(key, i === 0 ? 'Adult 1 — You' : `Adult ${i + 1}`, name, prev ? prev.dietary : '');
+        if (prev && prev.edited) row.querySelector('.member-name')._edited = true;
+        grid.appendChild(row);
+      }
+      for (let i = 0; i < children; i++) {
+        const key  = `child-${i}`;
+        const prev = saved[key];
+        grid.appendChild(buildMemberRow(key, `Child ${i + 1}`, prev ? prev.name : '', prev ? prev.dietary : ''));
+      }
+
+      // Track the first time a user edits Adult 1's name so auto-fill stops
+      const adult1Name = grid.querySelector('[data-key="adult-0"] .member-name');
+      if (adult1Name && !adult1Name._edited) {
+        adult1Name.addEventListener('input', function () { this._edited = true; }, { once: true });
+      }
+    }
+
+    function buildMemberRow(key, label, name, dietary) {
+      const div = document.createElement('div');
+      div.className   = 'party-member-row';
+      div.dataset.key = key;
+      div.innerHTML   = `
+        <span class="member-label">${label}</span>
+        <div class="member-fields">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" class="member-name" placeholder="Full name"
+                   value="${escAttr(name)}" autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label>Allergies / Dietary Needs</label>
+            <input type="text" class="member-dietary"
+                   placeholder="None, or describe…"
+                   value="${escAttr(dietary)}" autocomplete="off" />
+          </div>
+        </div>`;
+      return div;
+    }
+
+    function escAttr(s) {
+      return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
+    function collectPartyMembers() {
+      return Array.from(document.querySelectorAll('#party-members-grid [data-key]')).map(row => ({
+        name:    row.querySelector('.member-name').value.trim(),
+        dietary: row.querySelector('.member-dietary').value.trim()
+      }));
+    }
+
+    // Build initial party member rows (1 adult by default)
+    updatePartyMembers();
 
     const donationInfo = document.getElementById('donation-info');
 
@@ -522,7 +617,7 @@
           attending,
           adults:              attending !== 'no' ? (adultsInput.value   || 1) : 0,
           children:            attending !== 'no' ? (childrenInput.value || 0) : 0,
-          dietaryRestrictions: document.getElementById('dietary').value,
+          partyMembers:        attending !== 'no' ? collectPartyMembers() : [],
           contributionType:    attending !== 'no' ? contribution : 'none',
           sideItemId:          attending !== 'no' && contribution === 'side_item' ? sideItemId : null,
           sideItemQuantity:    sideQty,

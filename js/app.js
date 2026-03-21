@@ -202,7 +202,7 @@ const APP = {
       attending:             formData.attending            || 'yes',
       adults:                parseInt(formData.adults)     || 0,
       children:              parseInt(formData.children)   || 0,
-      dietaryRestrictions:  (formData.dietaryRestrictions  || '').trim(),
+      partyMembers:          Array.isArray(formData.partyMembers) ? formData.partyMembers : [],
       contributionType:      formData.contributionType     || 'none',
       sideItemId:            formData.sideItemId           || null,
       sideItemQuantity:      formData.contributionType === 'side_item' ? qty : 0,
