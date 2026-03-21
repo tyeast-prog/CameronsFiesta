@@ -376,14 +376,20 @@
       empty.classList.add('hidden');
 
       tbody.innerHTML = list.map(r => {
-        const sideItemObj  = r.sideItemId ? (_sideItems.find(i => i.id === r.sideItemId) || {}) : {};
-        const sideItem     = sideItemObj.name || '';
-        const sideQty      = r.sideItemQuantity;
-        const contribText  = {
-          side_item: `Side dish${sideItem ? ': ' + sideItem : ''}${(sideQty && sideQty > 1) ? ' ×' + sideQty : ''}`,
-          donation:  'Main course',
-          none:      '—'
-        }[r.contributionType] || '—';
+        let contribText = r.contributionType === 'donation' ? 'Main course' : '—';
+        if (r.contributionType === 'side_item') {
+          if (Array.isArray(r.sideItems) && r.sideItems.length > 0) {
+            // New format: multiple items
+            contribText = r.sideItems.map(s => {
+              const item = _sideItems.find(i => i.id === s.id) || {};
+              return (item.name || s.id) + (s.quantity > 1 ? ' ×' + s.quantity : '');
+            }).join(', ');
+          } else if (r.sideItemId) {
+            // Legacy format: single item
+            const item = _sideItems.find(i => i.id === r.sideItemId) || {};
+            contribText = (item.name || r.sideItemId) + (r.sideItemQuantity > 1 ? ' ×' + r.sideItemQuantity : '');
+          }
+        }
         const badgeCls    = { yes: 'badge-yes', maybe: 'badge-maybe', no: 'badge-no' }[r.attending] || '';
         const dateStr     = r.timestamp ? new Date(r.timestamp).toLocaleDateString() + ' ' + new Date(r.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—';
 

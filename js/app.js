@@ -192,7 +192,6 @@ const APP = {
   // ── RSVPs ──────────────────────────────────────────────────
 
   async submitRSVP(formData) {
-    const qty = Math.max(1, parseInt(formData.sideItemQuantity) || 1);
     const rsvp = {
       timestamp:            firebase.firestore.FieldValue.serverTimestamp(),
       firstName:            (formData.firstName            || '').trim(),
@@ -202,40 +201,49 @@ const APP = {
       attending:             formData.attending            || 'yes',
       adults:                parseInt(formData.adults)     || 0,
       children:              parseInt(formData.children)   || 0,
-      partyMembers:          Array.isArray(formData.partyMembers) ? formData.partyMembers : [],
-      contributionType:      formData.contributionType     || 'none',
-      sideItemId:            formData.sideItemId           || null,
-      sideItemQuantity:      formData.contributionType === 'side_item' ? qty : 0,
-      note:                 (formData.note                 || '').trim()
+      partyMembers:     Array.isArray(formData.partyMembers) ? formData.partyMembers : [],
+      contributionType: formData.contributionType || 'none',
+      sideItems:        Array.isArray(formData.sideItems) ? formData.sideItems : [],
+      note:            (formData.note || '').trim()
     };
 
-    // Atomically claim side item quantity + create RSVP
-    if (rsvp.contributionType === 'side_item' && rsvp.sideItemId) {
-      const itemRef = _db.collection('sideItems').doc(rsvp.sideItemId);
-      const rsvpRef = _db.collection('rsvps').doc();
+    // Atomically claim all selected side items + create RSVP
+    if (rsvp.contributionType === 'side_item' && rsvp.sideItems.length > 0) {
+      const rsvpRef  = _db.collection('rsvps').doc();
+      const itemRefs = rsvp.sideItems.map(s => _db.collection('sideItems').doc(s.id));
+
       await _db.runTransaction(async tx => {
-        const itemDoc = await tx.get(itemRef);
-        if (!itemDoc.exists) throw new Error('Side item not found.');
-        const item      = itemDoc.data();
-        const remaining = (item.needed || 1) - (item.claimedCount || 0);
-        if (remaining <= 0) {
-          throw new Error('Sorry — that item is fully claimed. Please choose another!');
+        // All reads must come before any writes in a transaction
+        const itemDocs = await Promise.all(itemRefs.map(ref => tx.get(ref)));
+
+        // Validate every selected item before writing anything
+        for (let i = 0; i < itemDocs.length; i++) {
+          if (!itemDocs[i].exists) throw new Error('One of the selected items was not found.');
+          const item      = itemDocs[i].data();
+          const s         = rsvp.sideItems[i];
+          const remaining = (item.needed || 1) - (item.claimedCount || 0);
+          if (remaining <= 0) {
+            throw new Error(`Sorry — ${item.name} is fully claimed. Please deselect it and try again.`);
+          }
+          if (s.quantity > remaining) {
+            throw new Error(`Sorry — only ${remaining} ${item.unit || ''} of ${item.name} still needed. Please adjust your quantity.`);
+          }
         }
-        if (qty > remaining) {
-          throw new Error(`Sorry — only ${remaining} still needed. Please adjust your quantity and try again.`);
+
+        // Write all updates (absolute value avoids Firebase increment(n>1) rule bug)
+        const submitterName = `${rsvp.firstName} ${rsvp.lastName}`.trim();
+        for (let i = 0; i < itemDocs.length; i++) {
+          const item = itemDocs[i].data();
+          const s    = rsvp.sideItems[i];
+          tx.update(itemRefs[i], {
+            claimedCount: item.claimedCount + s.quantity,
+            signups: firebase.firestore.FieldValue.arrayUnion({
+              rsvpId:   rsvpRef.id,
+              name:     submitterName,
+              quantity: s.quantity
+            })
+          });
         }
-        // Use absolute value (item.claimedCount + qty) rather than
-        // FieldValue.increment(qty) — Firebase security rules have a bug
-        // where increment(n > 1) causes diff().affectedKeys() to include
-        // phantom keys, failing the hasOnly() rule check.
-        tx.update(itemRef, {
-          claimedCount: item.claimedCount + qty,
-          signups:      firebase.firestore.FieldValue.arrayUnion({
-            rsvpId:   rsvpRef.id,
-            name:     `${rsvp.firstName} ${rsvp.lastName}`.trim(),
-            quantity: qty
-          })
-        });
         tx.set(rsvpRef, rsvp);
       });
       return rsvpRef.id;
@@ -275,18 +283,28 @@ const APP = {
     if (!doc.exists) return false;
     const rsvp = doc.data();
 
-    if (rsvp.contributionType === 'side_item' && rsvp.sideItemId) {
-      const qty     = rsvp.sideItemQuantity || 1; // backward compat: old RSVPs default to 1
-      const itemRef = _db.collection('sideItems').doc(rsvp.sideItemId);
+    // Build list of side items to decrement — support both new (sideItems[]) and old (sideItemId) formats
+    const itemsToDecrement = [];
+    if (Array.isArray(rsvp.sideItems) && rsvp.sideItems.length > 0) {
+      rsvp.sideItems.forEach(s => itemsToDecrement.push({ id: s.id, qty: s.quantity || 1 }));
+    } else if (rsvp.contributionType === 'side_item' && rsvp.sideItemId) {
+      itemsToDecrement.push({ id: rsvp.sideItemId, qty: rsvp.sideItemQuantity || 1 });
+    }
+
+    if (itemsToDecrement.length > 0) {
+      const itemRefs = itemsToDecrement.map(i => _db.collection('sideItems').doc(i.id));
       await _db.runTransaction(async tx => {
-        const itemDoc = await tx.get(itemRef);
-        if (itemDoc.exists) {
-          const item    = itemDoc.data();
-          const signups = (item.signups || []).filter(s => s.rsvpId !== id);
-          tx.update(itemRef, {
-            claimedCount: Math.max(0, (item.claimedCount || qty) - qty),
-            signups
-          });
+        const itemDocs = await Promise.all(itemRefs.map(ref => tx.get(ref)));
+        for (let i = 0; i < itemDocs.length; i++) {
+          if (itemDocs[i].exists) {
+            const item    = itemDocs[i].data();
+            const qty     = itemsToDecrement[i].qty;
+            const signups = (item.signups || []).filter(s => s.rsvpId !== id);
+            tx.update(itemRefs[i], {
+              claimedCount: Math.max(0, (item.claimedCount || 0) - qty),
+              signups
+            });
+          }
         }
         tx.delete(_db.collection('rsvps').doc(id));
       });

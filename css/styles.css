@@ -748,13 +748,32 @@ h1, h2, h3, h4 {
   background: var(--blue-50);
   box-shadow: 0 0 0 3px rgba(43,95,184,0.12);
 }
-.side-item-pick-card input[type="radio"] {
+.side-item-pick-card { flex-direction: column; }
+.card-select-area {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  cursor: pointer;
+  width: 100%;
+}
+.side-item-pick-card input[type="checkbox"] {
   margin-top: 4px;
   accent-color: var(--blue-600);
   flex-shrink: 0;
   width: 15px;
   height: 15px;
 }
+.card-qty-controls {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--blue-100);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+.card-qty-unit  { font-size: 0.78rem; color: var(--text-500); }
+.card-qty-avail { font-size: 0.73rem; color: var(--text-300); }
 .pick-card-body {
   display: flex;
   flex-direction: column;

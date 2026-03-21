@@ -249,22 +249,12 @@
 
               <!-- Side Item Selector -->
               <div id="side-item-selector" class="side-item-selector hidden">
-                <p class="pick-header">Choose an item to bring <span style="color:var(--danger)">*</span></p>
-                <p class="helper-text" style="margin-bottom:var(--space-md);">Quantities shown — multiple guests can share an item!</p>
+                <p class="pick-header">Choose items to bring <span style="color:var(--danger)">*</span></p>
+                <p class="helper-text" style="margin-bottom:var(--space-md);">Select one or more items — you can set a quantity for each.</p>
                 <div class="side-item-pick-grid" id="side-item-pick-grid">
                   <!-- Cards injected by JS -->
                 </div>
 
-                <!-- Quantity Picker — appears after selecting a card -->
-                <div id="side-qty-picker" class="side-qty-picker hidden">
-                  <p class="qty-label">How many <strong id="qty-unit-text"></strong> of <strong id="qty-item-text"></strong> will you bring?</p>
-                  <div class="qty-controls">
-                    <button type="button" class="qty-btn" onclick="adjustQty(-1)">−</button>
-                    <input type="number" id="sideItemQty" value="1" min="1" max="1" class="qty-input" readonly />
-                    <button type="button" class="qty-btn" onclick="adjustQty(1)">+</button>
-                  </div>
-                  <p class="qty-avail" id="qty-avail"></p>
-                </div>
               </div>
             </div>
           </div>
@@ -392,10 +382,6 @@
       const sideLabel  = document.querySelector('label:has(#contrib-side)');
       grid.innerHTML   = '';
 
-      // Reset qty picker
-      document.getElementById('side-qty-picker').classList.add('hidden');
-      document.getElementById('sideItemQty').value = '1';
-
       // Rebuild item map for quick lookup
       _sideItemMap = {};
       items.forEach(i => { _sideItemMap[i.id] = i; });
@@ -412,15 +398,27 @@
           const spotsLabel = item.remaining === 1
             ? `1 ${unit} remaining`
             : `${item.remaining} of ${item.needed} ${unit} remaining`;
-          const card = document.createElement('label');
-          card.className = 'side-item-pick-card';
-          card.innerHTML = `
-            <input type="radio" name="sideItemPick" value="${item.id}" />
-            <span class="pick-card-body">
-              <span class="pick-card-name">${item.name}</span>
-              <span class="pick-card-desc">${item.description || ''}</span>
-              <span class="pick-card-spots">🍽 ${spotsLabel}</span>
-            </span>`;
+          const card = document.createElement('div');
+          card.className   = 'side-item-pick-card';
+          card.dataset.id  = item.id;
+          card.innerHTML   = `
+            <label class="card-select-area">
+              <input type="checkbox" class="side-item-check" name="sideItemPick" value="${item.id}" />
+              <span class="pick-card-body">
+                <span class="pick-card-name">${item.name}</span>
+                <span class="pick-card-desc">${item.description || ''}</span>
+                <span class="pick-card-spots">🍽 ${spotsLabel}</span>
+              </span>
+            </label>
+            <div class="card-qty-controls hidden">
+              <div class="qty-controls">
+                <button type="button" class="qty-btn card-qty-btn" data-delta="-1">−</button>
+                <input type="number" class="card-qty-input qty-input" value="1" min="1" max="${item.remaining}" readonly />
+                <button type="button" class="qty-btn card-qty-btn" data-delta="1">+</button>
+              </div>
+              <span class="card-qty-unit">${unit}</span>
+              <span class="card-qty-avail">(${item.remaining} available)</span>
+            </div>`;
           grid.appendChild(card);
         });
       }
@@ -553,40 +551,42 @@
       r.addEventListener('change', () => {
         sideSelector.classList.toggle('hidden',  r.value !== 'side_item');
         donationInfo.classList.toggle('hidden',  r.value !== 'donation');
-        if (r.value !== 'side_item') {
-          document.getElementById('side-qty-picker').classList.add('hidden');
-        }
       });
     });
 
-    // Show qty picker when a side item card is selected
+    // Toggle per-card qty controls when a checkbox is checked/unchecked
     document.getElementById('side-item-pick-grid').addEventListener('change', function (e) {
-      if (e.target.name === 'sideItemPick') {
-        const item = _sideItemMap[e.target.value];
-        if (item) showQtyPicker(item);
+      if (e.target.classList.contains('side-item-check')) {
+        const card = e.target.closest('.side-item-pick-card');
+        const qty  = card.querySelector('.card-qty-controls');
+        if (e.target.checked) {
+          qty.classList.remove('hidden');
+        } else {
+          qty.classList.add('hidden');
+          card.querySelector('.card-qty-input').value = '1';
+        }
       }
     });
 
-    function showQtyPicker(item) {
-      const unit     = item.unit || 'unit(s)';
-      const qtyInput = document.getElementById('sideItemQty');
-      document.getElementById('qty-unit-text').textContent = unit;
-      document.getElementById('qty-item-text').textContent = item.name;
-      qtyInput.min   = '1';
-      qtyInput.max   = String(item.remaining);
-      qtyInput.value = '1';
-      document.getElementById('qty-avail').textContent =
-        `${item.remaining} ${unit} still needed — enter how many you'll bring`;
-      document.getElementById('side-qty-picker').classList.remove('hidden');
-    }
-
-    window.adjustQty = function (delta) {
-      const input = document.getElementById('sideItemQty');
+    // Per-card quantity +/- buttons
+    document.getElementById('side-item-pick-grid').addEventListener('click', function (e) {
+      const btn = e.target.closest('.card-qty-btn');
+      if (!btn) return;
+      const card  = btn.closest('.side-item-pick-card');
+      const input = card.querySelector('.card-qty-input');
       const val   = parseInt(input.value) || 1;
       const min   = parseInt(input.min)   || 1;
       const max   = parseInt(input.max)   || 1;
-      input.value = Math.min(max, Math.max(min, val + delta));
-    };
+      input.value = Math.min(max, Math.max(min, val + parseInt(btn.dataset.delta)));
+    });
+
+    function collectSideItems() {
+      return Array.from(document.querySelectorAll('#side-item-pick-grid .side-item-check:checked'))
+        .map(cb => ({
+          id:       cb.value,
+          quantity: parseInt(cb.closest('.side-item-pick-card').querySelector('.card-qty-input').value) || 1
+        }));
+    }
 
     /* ── Submit ─────────────────────────────────────── */
     form.addEventListener('submit', async function (e) {
@@ -596,34 +596,30 @@
       const attending = document.querySelector('input[name="attending"]:checked')?.value;
       if (!attending) { showError('Please let us know if you\'ll be attending.'); return; }
 
-      const contribution = document.querySelector('input[name="contribution"]:checked')?.value || 'none';
-      const sideItemId   = document.querySelector('input[name="sideItemPick"]:checked')?.value || '';
-      if (contribution === 'side_item' && !sideItemId) {
-        showError('Please select a side dish item, or choose a different option.'); return;
+      const contribution      = document.querySelector('input[name="contribution"]:checked')?.value || 'none';
+      const selectedSideItems = (attending !== 'no' && contribution === 'side_item') ? collectSideItems() : [];
+      if (contribution === 'side_item' && selectedSideItems.length === 0) {
+        showError('Please select at least one item, or choose a different option.'); return;
       }
 
       submitBtn.disabled   = true;
       submitBtn.textContent = 'Submitting…';
 
       try {
-        const sideQty = (attending !== 'no' && contribution === 'side_item')
-          ? (parseInt(document.getElementById('sideItemQty').value) || 1)
-          : 0;
         const id = await APP.submitRSVP({
-          firstName:           document.getElementById('firstName').value,
-          lastName:            document.getElementById('lastName').value,
-          email:               document.getElementById('email').value,
-          phone:               document.getElementById('phone').value,
+          firstName:        document.getElementById('firstName').value,
+          lastName:         document.getElementById('lastName').value,
+          email:            document.getElementById('email').value,
+          phone:            document.getElementById('phone').value,
           attending,
-          adults:              attending !== 'no' ? (adultsInput.value   || 1) : 0,
-          children:            attending !== 'no' ? (childrenInput.value || 0) : 0,
-          partyMembers:        attending !== 'no' ? collectPartyMembers() : [],
-          contributionType:    attending !== 'no' ? contribution : 'none',
-          sideItemId:          attending !== 'no' && contribution === 'side_item' ? sideItemId : null,
-          sideItemQuantity:    sideQty,
-          note:                document.getElementById('note').value
+          adults:           attending !== 'no' ? (adultsInput.value   || 1) : 0,
+          children:         attending !== 'no' ? (childrenInput.value || 0) : 0,
+          partyMembers:     attending !== 'no' ? collectPartyMembers() : [],
+          contributionType: attending !== 'no' ? contribution : 'none',
+          sideItems:        selectedSideItems,
+          note:             document.getElementById('note').value
         });
-        showSuccess(attending, contribution, sideItemId, sideQty);
+        showSuccess(attending, contribution, selectedSideItems);
       } catch (err) {
         console.error('RSVP submit error:', err.code, err.message, err);
         // Firebase transport errors on mobile often surface as permission-denied;
@@ -643,7 +639,7 @@
       errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    function showSuccess(attending, contribution, sideItemId, sideQty) {
+    function showSuccess(attending, contribution, selectedSideItems) {
       form.classList.add('hidden');
       successDiv.classList.remove('hidden');
 
@@ -654,14 +650,15 @@
         : `You're all set, ${fn}! We can't wait to celebrate Cameron's 50th with you. Don't forget — it's a SURPRISE! 🤫`;
 
       const contribMap = {
-        side_item: 'Bringing a side dish',
+        side_item: 'Bringing side dish(es)',
         donation:  'Contributing to main course',
         none:      'Just attending'
       };
-      const sideItemObj  = sideItemId ? (_sideItemMap[sideItemId] || {}) : {};
-      const sideItemName = sideItemObj.name || '';
-      const sideUnit     = sideItemObj.unit || '';
-      const qtyLabel     = (sideQty && sideQty > 1) ? `${sideQty} ${sideUnit} of ` : '';
+      const sideItemsLabel = (selectedSideItems || []).map(s => {
+        const item   = _sideItemMap[s.id] || {};
+        const qtyStr = s.quantity > 1 ? `${s.quantity} ${item.unit || ''} of ` : '';
+        return `${qtyStr}${item.name || s.id}`;
+      }).join(', ');
 
       const rows = [
         ['Name',      `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`],
@@ -669,7 +666,7 @@
         attending !== 'no' ? ['Adults',   adultsInput.value]   : null,
         attending !== 'no' ? ['Children', childrenInput.value] : null,
         attending !== 'no' && contribution !== 'none'
-          ? ['Contribution', contribMap[contribution] + (sideItemName ? ` — ${qtyLabel}${sideItemName}` : '')]
+          ? ['Contribution', contribMap[contribution] + (sideItemsLabel ? ` — ${sideItemsLabel}` : '')]
           : null
       ].filter(Boolean);
 
