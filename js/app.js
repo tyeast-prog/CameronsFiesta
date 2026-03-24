@@ -269,6 +269,12 @@ const APP = {
       .onSnapshot(snap => callback(snap.docs.map(d => this._normalizeRSVP(d))));
   },
 
+  /** Real-time side items listener — returns unsubscribe function. */
+  onSideItems(callback) {
+    return _db.collection('sideItems').orderBy('order', 'asc')
+      .onSnapshot(snap => callback(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+  },
+
   _normalizeRSVP(doc) {
     const d = doc.data();
     return {

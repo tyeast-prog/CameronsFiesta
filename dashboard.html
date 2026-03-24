@@ -264,9 +264,10 @@
     APP.init();
 
     // Live data snapshots
-    let _rsvps     = [];
-    let _sideItems = [];
-    let _unsubRSVP = null;
+    let _rsvps          = [];
+    let _sideItems      = [];
+    let _unsubRSVP      = null;
+    let _unsubSideItems = null;
 
     /* ── Auth ───────────────────────────────────────── */
     APP.onAuthStateChanged(async (user) => {
@@ -277,7 +278,8 @@
       } else {
         document.getElementById('auth-overlay').classList.remove('hidden');
         document.getElementById('loading-state').classList.add('hidden');
-        if (_unsubRSVP) { _unsubRSVP(); _unsubRSVP = null; }
+        if (_unsubRSVP)      { _unsubRSVP();      _unsubRSVP      = null; }
+        if (_unsubSideItems) { _unsubSideItems(); _unsubSideItems = null; }
       }
     });
 
@@ -321,9 +323,14 @@
     }
 
     /* ── Load Dashboard ──────────────────────────────── */
-    async function loadDashboard() {
+    function loadDashboard() {
       document.getElementById('loading-state').classList.remove('hidden');
-      _sideItems = await APP.getSideItems();
+
+      // Real-time side items listener — keeps tracker & stats always current
+      _unsubSideItems = APP.onSideItems(items => {
+        _sideItems = items;
+        if (_rsvps.length > 0) renderAll();   // re-render if RSVPs already loaded
+      });
 
       // Real-time RSVP listener
       _unsubRSVP = APP.onRSVPs(rsvps => {
@@ -336,7 +343,7 @@
         }
       });
 
-      document.getElementById('export-btn').onclick  = () => APP.exportCSV(_rsvps, _sideItems);
+      document.getElementById('export-btn').onclick   = () => APP.exportCSV(_rsvps, _sideItems);
       document.getElementById('export-btn-2').onclick = () => APP.exportCSV(_rsvps, _sideItems);
     }
 
@@ -521,7 +528,6 @@
       document.getElementById('confirm-delete-btn').textContent = 'Deleting…';
       try {
         await APP.deleteRSVP(_pendingId);
-        _sideItems = await APP.getSideItems(); // refresh side items counts
         closeDeleteModal();
         showAlert('RSVP deleted.', 'success');
       } catch(e) {
@@ -739,7 +745,6 @@
         };
 
         await APP.updateRSVP(_editingId, _editingRSVP, formData);
-        _sideItems = await APP.getSideItems();   // refresh side item counts
         closeEditModal();
         showAlert('RSVP updated successfully!', 'success');
       } catch (e) {
