@@ -454,21 +454,80 @@ const APP = {
   // ── Export ─────────────────────────────────────────────────
 
   exportCSV(rsvps, sideItems) {
-    const headers = ['ID','First','Last','Email','Phone','Attending','Adults','Children',
-                     'Dietary','Contribution','Side Item','Qty','Note','Submitted'];
+    const q = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+
+    // ── Build headers ──────────────────────────────────────────
+    // Figure out the most party members anyone has so we can emit
+    // a fixed set of "Person N Name / Person N Dietary" columns.
+    const maxMembers = rsvps.reduce((m, r) => {
+      const len = Array.isArray(r.partyMembers) ? r.partyMembers.length : 0;
+      return Math.max(m, len);
+    }, 1);
+
+    const memberHeaders = [];
+    for (let i = 1; i <= maxMembers; i++) {
+      memberHeaders.push(`Person ${i} Name`, `Person ${i} Dietary/Allergy`);
+    }
+
+    const headers = [
+      'ID', 'First Name', 'Last Name', 'Email', 'Phone',
+      'Attending', 'Adults', 'Children',
+      ...memberHeaders,
+      'Contribution', 'Items to Bring',
+      'Note', 'Submitted'
+    ];
+
+    // ── Build rows ─────────────────────────────────────────────
     const rows = rsvps.map(r => {
-      const found    = r.sideItemId ? (sideItems.find(i => i.id === r.sideItemId) || {}) : {};
-      const sideItem = found.name || '';
-      const sideQty  = r.sideItemQuantity || (r.sideItemId ? 1 : '');
+      // Per-person dietary columns
+      const memberCols = [];
+      for (let i = 0; i < maxMembers; i++) {
+        const m = Array.isArray(r.partyMembers) ? (r.partyMembers[i] || {}) : {};
+        // Fall back to legacy single dietaryRestrictions string for person 0
+        const name    = m.name    || (i === 0 ? `${r.firstName || ''} ${r.lastName || ''}`.trim() : '');
+        const dietary = m.dietary || (i === 0 ? (r.dietaryRestrictions || '') : '');
+        memberCols.push(name, dietary);
+      }
+
+      // Human-readable contribution
+      let contribLabel = '';
+      if (r.contributionType === 'donation') {
+        contribLabel = 'Main Course Contribution';
+      } else if (r.contributionType === 'side_item') {
+        contribLabel = 'Side Dish';
+      } else {
+        contribLabel = 'None';
+      }
+
+      // Items to bring — supports new sideItems[] array and legacy sideItemId
+      let itemsText = '';
+      if (r.contributionType === 'side_item') {
+        if (Array.isArray(r.sideItems) && r.sideItems.length > 0) {
+          itemsText = r.sideItems.map(s => {
+            const item = sideItems.find(i => i.id === s.id) || {};
+            return (item.name || s.id) + (s.quantity > 1 ? ` ×${s.quantity}` : '');
+          }).join('; ');
+        } else if (r.sideItemId) {
+          const item = sideItems.find(i => i.id === r.sideItemId) || {};
+          const qty  = r.sideItemQuantity || 1;
+          itemsText  = (item.name || r.sideItemId) + (qty > 1 ? ` ×${qty}` : '');
+        }
+      }
+
       return [
         r.id, r.firstName, r.lastName, r.email, r.phone,
-        r.attending, r.adults, r.children, r.dietaryRestrictions,
-        r.contributionType, sideItem, sideQty, r.note,
+        r.attending === 'yes' ? 'Yes' : r.attending === 'maybe' ? 'Maybe' : 'No',
+        r.attending !== 'no' ? (r.adults   || 0) : '',
+        r.attending !== 'no' ? (r.children || 0) : '',
+        ...memberCols,
+        contribLabel, itemsText,
+        r.note || '',
         r.timestamp ? new Date(r.timestamp).toLocaleString() : ''
-      ].map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',');
+      ].map(q).join(',');
     });
-    const csv  = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+
+    const csv  = [headers.map(q).join(','), ...rows].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
